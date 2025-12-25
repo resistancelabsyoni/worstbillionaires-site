@@ -1496,7 +1496,9 @@ function downloadShareImage() {
         const round = getCurrentRound();
         state.votes[`round${round}`] = { ...(state.votes[`round${round}`] || {}), ...selections };
         localStorage.setItem('wb_votes', JSON.stringify(state.votes));
+        // Mark this round as submitted so we don't allow a second vote
         state.hasSubmittedThisRound = true;
+        localStorage.setItem('wb_submitted_round' + round, 'true');
         
         return { success: true };
     }
@@ -1662,6 +1664,11 @@ function downloadShareImage() {
         const roundConfig = CONFIG.rounds[round - 1];
         const prevVotes = state.votes[`round${round}`] || {};
         const hasVotedAll = Object.keys(prevVotes).length === matchups.length;
+        // Check if this round has already been submitted in a previous session
+        const storedSubmit = localStorage.getItem('wb_submitted_round' + round);
+        if (storedSubmit === 'true') {
+            state.hasSubmittedThisRound = true;
+        }
         
         main.innerHTML = `
             ${renderScheduleAndExplainer()}
@@ -1680,7 +1687,7 @@ function downloadShareImage() {
             </div>
             
             <div class="submit-section" id="submitSection">
-                ${hasVotedAll ? renderThankYou() : renderSubmitArea(matchups.length)}
+                ${state.hasSubmittedThisRound || hasVotedAll ? renderThankYou() : renderSubmitArea(matchups.length)}
             </div>
             
             ${renderPastRounds()}
@@ -1690,7 +1697,8 @@ function downloadShareImage() {
     }
     
     function renderMatchupCard(matchup, index, votedFor) {
-        const hasVoted = !!votedFor;
+        // Treat the matchup as complete if the user has submitted any vote this round
+        const hasVoted = !!votedFor || state.hasSubmittedThisRound;
         const selected = state.selections[matchup.id];
         
         return `
@@ -1774,6 +1782,11 @@ function downloadShareImage() {
                     <div class="share-strip">
                         <button class="share-btn twitter" onclick="shareTwitter()">𝕏 Share</button>
                         <button class="share-btn facebook" onclick="shareFacebook()">Facebook</button>
+                        <button class="share-btn linkedin" onclick="shareLinkedIn()">LinkedIn</button>
+                        <button class="share-btn reddit" onclick="shareReddit()">Reddit</button>
+                        <button class="share-btn bluesky" onclick="shareBluesky()">Bluesky</button>
+                        <button class="share-btn email" onclick="shareEmail()">Email</button>
+                        <button class="share-btn download" onclick="downloadShareImage()">🖼️ Image</button>
                         <button class="share-btn copy" onclick="copyLink()">🔗 Copy Link</button>
                     </div>
                 ` : `
@@ -1796,6 +1809,16 @@ function downloadShareImage() {
                         <button type="submit" class="btn btn-primary form-submit">Show Me Results →</button>
                     </form>
                     <a href="#" class="form-skip" onclick="skipEmail(); return false;">Maybe later</a>
+                    <div class="share-strip" style="margin-top: 30px;">
+                        <button class="share-btn twitter" onclick="shareTwitter()">𝕏 Share</button>
+                        <button class="share-btn facebook" onclick="shareFacebook()">Facebook</button>
+                        <button class="share-btn linkedin" onclick="shareLinkedIn()">LinkedIn</button>
+                        <button class="share-btn reddit" onclick="shareReddit()">Reddit</button>
+                        <button class="share-btn bluesky" onclick="shareBluesky()">Bluesky</button>
+                        <button class="share-btn email" onclick="shareEmail()">Email</button>
+                        <button class="share-btn download" onclick="downloadShareImage()">🖼️ Image</button>
+                        <button class="share-btn copy" onclick="copyLink()">🔗 Copy Link</button>
+                    </div>
                 `}
             </div>
         `;
