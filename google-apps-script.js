@@ -14,26 +14,42 @@
 // ============================================
 // CONFIGURATION
 // ============================================
-const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+// Spreadsheet ID for storing votes and contact data.  This must be
+// replaced with the ID of the sheet you created for the Worst Billionaires
+// tournament.  See the README for setup instructions.
+const SPREADSHEET_ID = '1T65YvdTQNXMb_l9nUnMtBTOMyF7TgP_4dVAc6qNAN_I';
 
 // Initial bracket (must match frontend)
+// Initial bracket.  Each pair represents a Round of 16 matchup.  This
+// bracket must match the frontend ordering in index.html.  The first
+// element in each sub‑array is the first candidate, the second is the
+// opponent.  Candidate IDs correspond to the keys in the BILLIONAIRES
+// object on the frontend.
 const INITIAL_BRACKET = [
-  ['musk', 'cook'],
-  ['bezos', 'dimon'],
-  ['zuckerberg', 'arnault'],
-  ['ellison', 'koch'],
-  ['thiel', 'ballmer'],
-  ['murdoch', 'page'],
-  ['adani', 'brin'],
-  ['trump', 'schwarzman']
+  ['musk',        'andreessen'],  // Matchup 1
+  ['trump',       'sacks'],       // Matchup 2
+  ['bezos',       'zuckerberg'],  // Matchup 3
+  ['adelson',     'sun'],         // Matchup 4
+  ['ellison',     'thiel'],       // Matchup 5
+  ['zhao',        'murdoch'],     // Matchup 6
+  ['schwarzman',  'adani'],       // Matchup 7
+  ['koch',        'dimon']        // Matchup 8
 ];
 
 // Round schedule (must match frontend)
+// Tournament schedule.  Each round has a start and end date.  Dates
+// should be in ISO‑8601 format (YYYY‑MM‑DD).  The current round is
+// determined based on the server’s timezone at runtime.  Update these
+// dates to control when voting opens and closes for each stage.
 const ROUNDS = [
-  { name: 'Round of 16', start: '2025-01-06', end: '2025-01-12' },
-  { name: 'Quarterfinals', start: '2025-01-13', end: '2025-01-19' },
-  { name: 'Semifinals', start: '2025-01-20', end: '2025-01-26' },
-  { name: 'The Final', start: '2025-01-27', end: '2025-02-02' }
+  // Round of 16 runs from Dec 24, 2025 through Jan 5, 2026
+  { name: 'Round of 16',    start: '2025-12-24', end: '2026-01-05' },
+  // Quarterfinals follow immediately after, Jan 6–Jan 12, 2026
+  { name: 'Quarterfinals',  start: '2026-01-06', end: '2026-01-12' },
+  // Semifinals: Jan 13–Jan 19, 2026
+  { name: 'Semifinals',     start: '2026-01-13', end: '2026-01-19' },
+  // Final: Jan 20–Jan 26, 2026
+  { name: 'The Final',      start: '2026-01-20', end: '2026-01-26' }
 ];
 
 // ============================================

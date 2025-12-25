@@ -975,7 +975,7 @@
         apiUrl: '',
         
         rounds: [
-            { name: 'Round of 16', start: '2025-12-20T00:00:00', end: '2026-01-05T23:59:59' },
+            { name: 'Round of 16', start: '2025-12-24T00:00:00', end: '2026-01-05T23:59:59' },
             { name: 'Quarterfinals', start: '2026-01-06T00:00:00', end: '2026-01-12T23:59:59' },
             { name: 'Semifinals', start: '2026-01-13T00:00:00', end: '2026-01-19T23:59:59' },
             { name: 'Final', start: '2026-01-20T00:00:00', end: '2026-01-26T23:59:59' }
@@ -989,146 +989,226 @@
     // ==========================================
     // BILLIONAIRE DATA
     // ==========================================
-    const BILLIONAIRES = {
+        const BILLIONAIRES = {
         musk: {
-            name: "Elon Musk",
-            short: "Musk",
-            company: "Tesla · SpaceX · X",
-            worth: "$449B",
-            avatar: "EM",
-            sins: `<strong>$288 million</strong> spent electing Trump — the largest individual political donation in history. Led DOGE to slash federal agencies and fire thousands. Turned X/Twitter into a far-right echo chamber. Made what appeared to be a <strong>Nazi salute</strong> at the inauguration rally. Tesla sales down 13% as brand becomes toxic.`
-        },
-        bezos: {
-            name: "Jeff Bezos",
-            short: "Bezos",
-            company: "Amazon · Washington Post",
-            worth: "$256B",
-            avatar: "JB",
-            sins: `Personally <strong>killed the Washington Post's endorsement</strong> of Kamala Harris, overruling his own editorial board. Paid <strong>$40 million</strong> for a fawning Melania Trump documentary with full creative control. Amazon donated $1M to Trump's inauguration. Warehouse workers still denied bathroom breaks.`
-        },
-        zuckerberg: {
-            name: "Mark Zuckerberg",
-            short: "Zuck",
-            company: "Meta (Facebook · Instagram)",
-            worth: "$229B",
-            avatar: "MZ",
-            sins: `<strong>Ended fact-checking entirely</strong> on Facebook and Instagram. Sat next to Trump at state dinners. Changed content policies to allow more hate speech and misinformation. Donated $1M to inauguration — after Trump previously threatened to <strong>imprison him for life</strong>.`
-        },
-        ellison: {
-            name: "Larry Ellison",
-            short: "Ellison",
-            company: "Oracle · Paramount/CBS",
-            worth: "$259B",
-            avatar: "LE",
-            sins: `Bought Paramount to reshape CBS News to be more favorable to Trump. <strong>Cancelled Stephen Colbert's</strong> show. Installing an "ombudsman" to monitor broadcasts for "liberal bias." Trump calls him <strong>"CEO of everything."</strong> One of the largest Republican megadonors.`
-        },
-        thiel: {
-            name: "Peter Thiel",
-            short: "Thiel",
-            company: "Palantir · Founders Fund",
-            worth: "$20.8B",
-            avatar: "PT",
-            sins: `Palantir provides <strong>surveillance technology to militaries</strong> worldwide, including systems used in conflict zones. Funding attack drone startups. Once argued that <strong>women's suffrage hurt libertarianism</strong>. Connected to Jeffrey Epstein through networking. Shadow power broker of Silicon Valley.`
-        },
-        murdoch: {
-            name: "Rupert Murdoch",
-            short: "Murdoch",
-            company: "News Corp · Fox News",
-            worth: "$21.2B",
-            avatar: "RM",
-            sins: `<strong>Highest public disapproval rating (55%)</strong> of any billionaire on Earth. Decades of weaponized disinformation through Fox News. Settled the Dominion lawsuit for <strong>$787 million</strong> after knowingly spreading election lies. Still controls conservative media empire at age 93.`
-        },
-        adani: {
-            name: "Gautam Adani",
-            short: "Adani",
-            company: "Adani Group",
-            worth: "$85B",
-            avatar: "GA",
-            sins: `<strong>Indicted by the US Department of Justice</strong> for a $250 million bribery scheme. Accused of paying Indian government officials for solar energy contracts. Facing securities fraud charges. Hindenburg Research called it <strong>"the largest con in corporate history."</strong>`
+        name: "Elon Musk",
+        short: "Musk",
+        company: "Tesla · SpaceX · X",
+        worth: "$449B",
+        avatar: "EM",
+        tagline: "Bought the government. Now he runs it.",
+        sins: `Spent <strong>$288 million</strong> electing Trump—the largest individual political donation in U.S. history. Now runs DOGE from a White House office, cutting agencies that regulate his own companies while his $15 billion in government contracts remain untouched.
+        
+        His companies face <strong>30+ federal investigations</strong> across 11 agencies. Those agencies? He's gutting them. The SEC sued him for fraud—he's now dismantling the SEC. The NLRB is prosecuting SpaceX for illegal firings—he tried to cancel their lease. Starlink terminals are being installed across federal buildings at taxpayer expense.
+        
+        Made what appeared to be a <strong>Nazi salute</strong> at Trump's inauguration rally. Tesla sales down 45% in Europe as the brand becomes toxic. Called a rescue diver a "pedo" and spread election conspiracy theories to his 200 million followers. The richest man in history, now with government power and zero oversight.`
         },
         trump: {
-            name: "Donald Trump",
-            short: "Trump",
-            company: "Trump Organization",
-            worth: "$6.7B",
-            avatar: "DT",
-            sins: `<strong>Convicted felon</strong> now serving as President. Highest "hate score" of any billionaire with 379,000 negative news mentions. Pushing massive tax cuts for billionaires while <strong>cutting services for millions</strong> of Americans through DOGE. 91 felony charges across four criminal cases.`
+        name: "Donald Trump",
+        short: "Trump",
+        company: "Trump Org · $TRUMP Coin",
+        worth: "$5.5B",
+        avatar: "DT",
+        tagline: "Convicted felon. Current president. Crypto grifter.",
+        sins: `<strong>34-count convicted felon</strong> now serving as President. His net worth jumped $3.2 billion since taking office—the most brazen presidential profiteering in American history. Launched the $TRUMP memecoin days before inauguration, making his family <strong>$800+ million</strong> in 2025.
+        
+        Purchased <strong>$103 million in corporate bonds</strong> from companies his policies directly affect. Pardoned crypto criminals who enriched his family. Accepted a $2 billion UAE investment in his crypto company days before signing favorable AI chip export deals. The corruption is so open it makes Teapot Dome look quaint.
+        
+        Fired inspectors general investigating his allies. Ended anti-corruption investigations. His Treasury is rewriting tax law to benefit "giant private equity firms, crypto companies, and multinational corporations." 91 felony charges across four cases—and he's above the law.`
+        },
+        sacks: {
+        name: "David Sacks",
+        short: "Sacks",
+        company: "Craft Ventures · White House",
+        worth: "$1.5B",
+        avatar: "DS",
+        tagline: "The crypto czar writing his own rules.",
+        sins: `Trump's <strong>"AI & Crypto Czar"</strong>—an unelected billionaire shaping policy for industries he's invested in. When Trump announced a strategic crypto reserve including Solana, critics noted Sacks had made <strong>$1 billion</strong> on Solana investments. He claims he divested. His fund still holds crypto companies.
+        
+        Given a <strong>blanket ethics waiver</strong> allowing him to work on matters affecting his financial holdings. The waiver came after Trump fired the head of the Office of Government Ethics. His job: light-touch regulation of crypto—an industry that donated massively to Trump.
+        
+        Called for the government to bail out Silicon Valley Bank when his portfolio was at risk. Now pushing to preempt state AI safety laws that his investments lobbied against. Steve Bannon called his approach "more regulations to open a nail salon than for dangerous AI technology."`
+        },
+        sun: {
+        name: "Justin Sun",
+        short: "Sun",
+        company: "Tron · World Liberty Financial",
+        worth: "$8.5B",
+        avatar: "JS",
+        tagline: "Bought a pardon with a $75 million investment.",
+        sins: `Chinese crypto billionaire facing <strong>SEC fraud charges</strong>—until he invested $75 million in Trump's World Liberty Financial. The SEC mysteriously paused its case. He went from avoiding U.S. soil for fear of arrest to VIP guest at Trump's private crypto dinner.
+        
+        Paid <strong>$6.2 million for a banana duct-taped to a wall</strong>—then ate it. His Tron network is linked to criminal organizations; one researcher estimates half of all illegal crypto activity runs through it. He's bragged about his connections to the Chinese Communist Party.
+        
+        Now Trump's crypto "guardian angel," reportedly planning to take Tron public through a Trump-connected investment bank. The SEC charges he "fraudulently inflated" crypto prices and made $31 million in "illegal proceeds"—charges conveniently on hold while Trump is president.`
+        },
+        adelson: {
+        name: "Miriam Adelson",
+        short: "Adelson",
+        company: "Las Vegas Sands · Dallas Mavericks",
+        worth: "$35B",
+        avatar: "MA",
+        tagline: "$250 million buys a lot of foreign policy.",
+        sins: `Gave <strong>$250 million</strong> to elect Trump—more than any other donor. When Trump asked whether she loves Israel or America more, she refused to answer. "That means that might be an issue," Trump joked. She's shaped U.S. Middle East policy through checkbook diplomacy.
+        
+        At a White House Hanukkah party, she urged Trump to <strong>run for a third term</strong>—openly discussing schemes with Jeffrey Epstein-linked lawyer Alan Dershowitz. She offered another $250 million if he does. The Constitution is apparently negotiable when you're this rich.
+        
+        Her late husband said he was a "one-issue person: Israel." She's continued the mission, pushing for West Bank annexation. She wrote that "Black Lives Matter activists" and critics of Israel "should be dead to us." Her 25-year union-busting campaign at the Venetian made it the only non-union casino on the Vegas Strip.`
+        },
+        bezos: {
+        name: "Jeff Bezos",
+        short: "Bezos",
+        company: "Amazon · Washington Post",
+        worth: "$256B",
+        avatar: "JB",
+        tagline: "Killed democracy. Dies in darkness.",
+        sins: `Personally <strong>killed the Washington Post's endorsement</strong> of Kamala Harris, overruling his own editorial board in an unprecedented intervention. 250,000 subscribers cancelled. Democracy dies in darkness—unless it's bad for business.
+        
+        Paid <strong>$40 million</strong> for a Melania Trump documentary with "full creative control" for the Trumps. Amazon donated $1 million to the inauguration. After years of Trump attacks, Bezos learned the lesson: bend the knee or face the consequences.
+        
+        World's largest retailer built on <strong>warehouse workers denied bathroom breaks</strong>, forced to pee in bottles, monitored by AI for "time off task." Fired workers who tried to unionize. Added $100 billion to his fortune during the pandemic while his workers got $2/hour hazard pay—briefly.`
+        },
+        zuckerberg: {
+        name: "Mark Zuckerberg",
+        short: "Zuck",
+        company: "Meta (Facebook · Instagram)",
+        worth: "$229B",
+        avatar: "MZ",
+        tagline: "Ended fact-checking. Embraced the chaos.",
+        sins: `<strong>Eliminated fact-checking entirely</strong> on Facebook and Instagram in January 2025. Called it "censorship" after years of defending it. The real reason: Trump threatened to throw him in prison, then won, and Zuck showed up at Mar-a-Lago to kiss the ring.
+        
+        Sat next to Trump at state dinners. Donated <strong>$1 million to the inauguration</strong>. Changed content policies to allow more hate speech. Replaced diverse board members. The transformation from "connecting the world" to MAGA court jester took about 90 days.
+        
+        Built the <strong>largest surveillance advertising machine</strong> in history. Facebook fueled genocide in Myanmar, spread COVID misinformation, and helped January 6th organizers. His "pivot to the metaverse" burned $50 billion. His pivot to Trump was free.`
+        },
+        andreessen: {
+        name: "Marc Andreessen",
+        short: "Andreessen",
+        company: "Andreessen Horowitz (a16z)",
+        worth: "$1.7B",
+        avatar: "MA",
+        tagline: "The tech bro whisperer in Trump's ear.",
+        sins: `Donated <strong>$33+ million</strong> to elect Trump and install cronies across the government. His venture firm invested in 8 companies under CFPB investigation—now DOGE is dismantling the CFPB. Coincidence? His portfolio companies' regulatory problems are disappearing.
+        
+        Leaked messages show him telling White House officials that universities will <strong>"pay the price"</strong> for DEI policies. "My people are furious and not going to take it anymore," he wrote about white conservatives. He's quietly become one of the most powerful voices in the administration.
+        
+        Published a "Techno-Optimist Manifesto" calling socialism and regulation "the enemy." His firm backed LendUp, which the CFPB found <strong>bilked customers by hiding fees</strong>. His solution? Destroy the CFPB. Now he's pushing to preempt all state AI safety laws.`
+        },
+        ellison: {
+        name: "Larry Ellison",
+        short: "Ellison",
+        company: "Oracle · Paramount/CBS",
+        worth: "$259B",
+        avatar: "LE",
+        tagline: "Bought CBS. Cancelled the critics.",
+        sins: `Bought Paramount to <strong>reshape CBS News</strong> to be friendlier to Trump. First move: cancelled Stephen Colbert's show. Installing an "ombudsman" to monitor broadcasts for "liberal bias." Trump calls him "CEO of everything."
+        
+        Close friends with Elon Musk—they vacation together, invest together, and now govern together. Oracle provides cloud infrastructure for TikTok (saved by Trump's executive order) and is angling for <strong>massive AI government contracts</strong>.
+        
+        Third-richest person on Earth, made his money on database software, then on government contracts. His Hawaii island compound and superyachts are monuments to extreme wealth while Oracle fights paying taxes. The media mogul era of Murdoch is ending. Ellison's is beginning.`
+        },
+        thiel: {
+        name: "Peter Thiel",
+        short: "Thiel",
+        company: "Palantir · Founders Fund",
+        worth: "$20.8B",
+        avatar: "PT",
+        tagline: "The surveillance capitalist who bankrolled MAGA.",
+        sins: `Palantir's surveillance technology is used by <strong>ICE to track immigrants</strong>, militaries to target drone strikes, and police departments nationwide. Now DOGE is reportedly using Palantir to surveil federal workers. He's the shadow architect of the tech-surveillance state.
+        
+        Bankrolled JD Vance's political career from venture capital to Vice President. His network of proteges—the "PayPal Mafia"—now runs the government. He once wrote that <strong>women's suffrage was bad for democracy</strong>. He funds "seasteading" to escape government entirely.
+        
+        Destroyed Gawker by secretly funding lawsuits—a billionaire using the courts to silence journalism. Connected to Jeffrey Epstein through multiple networking events. His worldview: democracy is overrated, technology should rule, and he should be the one writing the code.`
+        },
+        zhao: {
+        name: "Changpeng Zhao",
+        short: "CZ",
+        company: "Binance",
+        worth: "$60B",
+        avatar: "CZ",
+        tagline: "Pardoned for money laundering. Back in business.",
+        sins: `Founded the world's largest crypto exchange, which the DOJ found <strong>enabled money laundering for terrorists and criminals</strong>. Pleaded guilty. Served four months. Then Trump gave him a full pardon—weeks after Binance helped broker a $2 billion deal for Trump's crypto company.
+        
+        The Justice Department said Binance caused <strong>"significant harm to U.S. national security"</strong> by letting criminals, including sanctions evaders and child exploitation networks, freely use the platform. He paid a $4.3 billion fine. Now he's free and clear.
+        
+        Binance processed 90% of the UAE's $2 billion investment in Trump's World Liberty Financial. The SEC dropped remaining charges. The pardon came five months later. The corruption is so obvious it barely needs explanation—money flowed to Trump, charges disappeared.`
+        },
+        murdoch: {
+        name: "Rupert Murdoch",
+        short: "Murdoch",
+        company: "News Corp · Fox News",
+        worth: "$21.2B",
+        avatar: "RM",
+        tagline: "Built the disinformation machine. Still running it.",
+        sins: `<strong>Highest disapproval rating (55%)</strong> of any billionaire on Earth. Decades of weaponized disinformation through Fox News. Settled the Dominion lawsuit for $787 million after his network knowingly spread election lies—texts showed hosts calling the claims "insane."
+        
+        At 93, he's still controlling the conservative media machine that made Trump possible. His newspapers and networks push climate denial, immigrant fear-mongering, and culture war outrage across three continents. <strong>Democracy's most persistent termite</strong>.
+        
+        Fox News hosts privately mocked Trump as "demonic" and "insane" while publicly amplifying him. Murdoch himself texted that the election fraud claims were "really crazy." Then they aired them anyway. The settlement was pocket change. The damage is permanent.`
         },
         schwarzman: {
-            name: "Stephen Schwarzman",
-            short: "Schwarzman",
-            company: "Blackstone",
-            worth: "$52.6B",
-            avatar: "SS",
-            sins: `<strong>United Nations formally condemned</strong> Blackstone's housing practices for contributing to the global housing crisis. World's largest corporate landlord, driving up rents everywhere. Called proposed tax reform <strong>"like when Hitler invaded Poland."</strong> Made over $1 billion again in 2024.`
+        name: "Stephen Schwarzman",
+        short: "Schwarzman",
+        company: "Blackstone",
+        worth: "$52.6B",
+        avatar: "SS",
+        tagline: "The landlord driving the housing crisis.",
+        sins: `The <strong>United Nations formally condemned</strong> Blackstone's housing practices for "devastating impacts" on the right to housing. The world's largest corporate landlord, buying up neighborhoods, raising rents, and fueling the affordability crisis.
+        
+        Called proposed tax reform <strong>"like when Hitler invaded Poland."</strong> For context: closing tax loopholes on private equity billionaires = Nazi invasion. He made over $1 billion again in 2024 while his tenants face eviction.
+        
+        Close Trump ally and megadonor. Blackstone tenants report aggressive rent increases, maintenance neglect, and rapid evictions. His business model: buy housing, maximize extraction, repeat. The American Dream, owned by private equity.`
         },
-        cook: {
-            name: "Tim Cook",
-            short: "Cook",
-            company: "Apple",
-            worth: "$2.4B",
-            avatar: "TC",
-            sins: `Donated <strong>$1 million to Trump's inauguration</strong> despite previous criticism of his policies. Apple manufacturing relies on exploitative labor conditions abroad. Makes privacy claims while <strong>cooperating with authoritarian regimes</strong> on censorship. Bowed to Trump pressure.`
-        },
-        dimon: {
-            name: "Jamie Dimon",
-            short: "Dimon",
-            company: "JPMorgan Chase",
-            worth: "$2.6B",
-            avatar: "JD",
-            sins: `JPMorgan has paid <strong>billions in fines</strong> for various financial violations. Bank continues to finance fossil fuel projects despite climate pledges. Reached a <strong>$290 million settlement</strong> over Epstein ties. Most powerful banker on Wall Street.`
-        },
-        arnault: {
-            name: "Bernard Arnault",
-            short: "Arnault",
-            company: "LVMH (Louis Vuitton · Dior)",
-            worth: "$160B",
-            avatar: "BA",
-            sins: `Periodically the <strong>world's richest person</strong>. Ultimate symbol of extreme wealth concentration. LVMH luxury empire profits from conspicuous consumption while global poverty persists. Notorious for <strong>French tax optimization schemes</strong>. Controls what rich people buy.`
+        adani: {
+        name: "Gautam Adani",
+        short: "Adani",
+        company: "Adani Group",
+        worth: "$85B",
+        avatar: "GA",
+        tagline: "Indicted in America. Untouchable in India.",
+        sins: `<strong>Indicted by the U.S. Department of Justice</strong> for a $250 million bribery scheme—accused of paying Indian government officials for solar energy contracts and misleading American investors. Facing securities fraud charges.
+        
+        Hindenburg Research called Adani Group <strong>"the largest con in corporate history"</strong>—a "brazen stock manipulation and accounting fraud scheme." His companies lost $150 billion in value after the report. He's still India's richest man.
+        
+        Close ally of Prime Minister Modi, his empire grew alongside India's nationalist turn. His ports, power plants, and media companies are woven into India's infrastructure—and its politics. American prosecutors say he corrupted both.`
         },
         koch: {
-            name: "Charles Koch",
-            short: "Koch",
-            company: "Koch Industries",
-            worth: "$66B",
-            avatar: "CK",
-            sins: `<strong>Decades funding climate change denial</strong>. Koch network has spent hundreds of millions on conservative causes and anti-regulation campaigns. Major force behind weakening environmental protections. Uses <strong>dynasty tax avoidance schemes</strong> to pass wealth to heirs untaxed.`
+        name: "Charles Koch",
+        short: "Koch",
+        company: "Koch Industries",
+        worth: "$66B",
+        avatar: "CK",
+        tagline: "Funded climate denial. The planet is paying.",
+        sins: `<strong>Decades funding climate change denial</strong>—hundreds of millions to think tanks, politicians, and PR campaigns that delayed action while the planet warmed. The Koch network is the single largest force behind America's failure to address climate change.
+        
+        Spent hundreds of millions more fighting unions, environmental regulations, and voting rights. His political machine helped gerrymander state legislatures and stack courts. <strong>Dark money pioneer.</strong>
+        
+        Now 89, passing his fortune and influence to the next generation through dynasty tax avoidance. Koch Industries—oil, chemicals, paper—is one of America's top polluters. The family fortune, built on fossil fuels, will outlast us all.`
         },
-        ballmer: {
-            name: "Steve Ballmer",
-            short: "Ballmer",
-            company: "Former Microsoft · LA Clippers",
-            worth: "$121B",
-            avatar: "SB",
-            sins: `Oversaw Microsoft's <strong>monopolistic practices</strong> during his tenure as CEO. Tech billionaire class solidarity. Extreme wealth hoarding while <strong>homelessness crisis surrounds</strong> his LA Clippers arena. One of the largest individual wealth accumulations in history.`
-        },
-        page: {
-            name: "Larry Page",
-            short: "Page",
-            company: "Google/Alphabet",
-            worth: "$156B",
-            avatar: "LP",
-            sins: `Chief architect of <strong>surveillance capitalism</strong>. Google fined billions for antitrust violations. <strong>"Don't be evil" motto abandoned</strong>. Has essentially disappeared from public life while continuing to amass one of the world's largest fortunes.`
-        },
-        brin: {
-            name: "Sergey Brin",
-            short: "Brin",
-            company: "Google/Alphabet",
-            worth: "$147B",
-            avatar: "SB",
-            sins: `Co-architect of <strong>surveillance capitalism</strong> alongside Page. Google's massive antitrust violations. "Don't be evil" now a punchline. Returned to Google to lead the <strong>AI arms race</strong> while ethical concerns mount.`
+        dimon: {
+        name: "Jamie Dimon",
+        short: "Dimon",
+        company: "JPMorgan Chase",
+        worth: "$2.6B",
+        avatar: "JD",
+        tagline: "Too big to fail. Too powerful to jail.",
+        sins: `JPMorgan has paid <strong>over $35 billion in fines</strong> since 2008—more than any bank in history. Fraud, market manipulation, mortgage abuses, sanctions violations. The cost of doing business when you're too big to fail.
+        
+        Reached a <strong>$290 million settlement</strong> over the bank's relationship with Jeffrey Epstein—years after his first conviction. The bank continued servicing him anyway. Most powerful banker on Wall Street, treated as a statesman.
+        
+        Finances more fossil fuel projects than any other bank despite climate pledges. Trump reportedly considered him for Treasury Secretary. Whether red or blue, JPMorgan wins. The fines are just a line item.`
         }
     };
     
     const INITIAL_BRACKET = [
-        ['musk', 'cook'],
-        ['bezos', 'dimon'],
-        ['zuckerberg', 'arnault'],
-        ['ellison', 'koch'],
-        ['thiel', 'ballmer'],
-        ['murdoch', 'page'],
-        ['adani', 'brin'],
-        ['trump', 'schwarzman']
+        ['musk', 'andreessen'],
+        ['trump', 'sacks'],
+        ['bezos', 'zuckerberg'],
+        ['adelson', 'sun'],
+        ['ellison', 'thiel'],
+        ['zhao', 'murdoch'],
+        ['schwarzman', 'adani'],
+        ['koch', 'dimon']
     ];
     
     // ==========================================
