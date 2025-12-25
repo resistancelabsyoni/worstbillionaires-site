@@ -2193,13 +2193,10 @@ function downloadShareImage() {
     async function init() {
         state.tournamentData = await fetchTournament();
         
-        // Check if already voted this round
-        const round = getCurrentRound();
-        if (round > 0 && round < 5) {
-            const prevVotes = state.votes[`round${round}`] || {};
-            const matchups = Object.values(state.tournamentData.matchups || {});
-            state.hasSubmittedThisRound = Object.keys(prevVotes).length === matchups.length;
-        }
+        // Always start each session with a fresh ballot. We do not carry over
+        // any previous vote counts between visits, so the thank‑you state is
+        // always reset to false on load.
+        state.hasSubmittedThisRound = false;
         
         render();
     }
