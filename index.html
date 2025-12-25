@@ -1465,9 +1465,13 @@ function downloadShareImage() {
         
         // Try to send to API if configured; use sendBeacon/no-cors to avoid CORS issues.
         if (CONFIG.apiUrl) {
+            // Provide both visitorId and an email-like identifier.  If the user hasn’t provided an email,
+            // generate a dummy email from the visitorId so older backends requiring an email will accept the vote.
+            const emailForBackend = state.email || `${state.visitorId}@example.invalid`;
             const payload = {
                 action: 'submitVotes',
                 visitorId: state.visitorId,
+                email: emailForBackend,
                 round: getCurrentRound(),
                 votes: selections
             };
