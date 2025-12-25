@@ -1403,8 +1403,16 @@ function downloadShareImage() {
         }
         
         try {
-            const res = await fetch(`${CONFIG.apiUrl}?action=getTournament`);
-            return await res.json();
+            const res = await fetch(`${CONFIG.apiUrl}?action=getTournament`, { cache: "no-store" });
+            const json = await res.json();
+            // Some backends respond with { ok:true, data:{...} }
+            const data = (json && json.data) ? json.data : json;
+            // Validate that matchups exist and have at least one entry; otherwise fallback to local
+            if (data && data.matchups && typeof data.matchups === 'object' && Object.keys(data.matchups).length > 0) {
+                return data;
+            }
+            // Fallback to local data if no matchups or invalid structure
+            return generateLocalTournamentData();
         } catch (e) {
             console.error('API error:', e);
             return generateLocalTournamentData();
