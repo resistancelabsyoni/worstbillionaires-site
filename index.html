@@ -981,10 +981,130 @@
             { name: 'Final', start: '2026-01-20T00:00:00', end: '2026-01-26T23:59:59' }
         ],
         
+        canonicalUrl: 'https://fuck2025.org',
+
         // Demo mode - set to false for production
         demo: false,
         demoRound: 1
     };
+
+// Voting schedule for display (human-readable)
+const SCHEDULE = [
+    { label: "Round of 16", dates: "Dec 24 – Jan 5" },
+    { label: "Quarterfinals", dates: "Jan 6 – Jan 9" },
+    { label: "Semifinals", dates: "Jan 10 – Jan 12" },
+    { label: "Final", dates: "Jan 13 – Jan 16" }
+];
+
+// Returns the canonical URL for sharing
+function canonicalUrl() {
+    return CONFIG.canonicalUrl || window.location.origin;
+}
+
+// Renders the schedule and a short explainer about the tournament.
+function renderScheduleAndExplainer() {
+    return `
+        <div class="card" style="margin: 20px 0 30px; padding: 18px; border: 1px solid var(--border); border-radius: 8px;">
+            <div style="font-weight:800; letter-spacing:0.08em; font-size:0.78rem; color: var(--gray);">SCHEDULE</div>
+            <div style="margin-top:10px; display:grid; gap:8px;">
+                ${SCHEDULE.map(r => `
+                    <div style="display:flex; justify-content:space-between; gap:12px;">
+                        <div style="font-weight:700;">${r.label}</div>
+                        <div style="color: var(--gray-light);">${r.dates}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div style="margin-top:16px; border-top:1px solid var(--border); padding-top:14px;">
+                <div style="font-weight:800; letter-spacing:0.08em; font-size:0.78rem; color: var(--gray);">HOW VOTING WORKS</div>
+                <ul style="margin:10px 0 0 18px; color: var(--gray-light); line-height:1.55;">
+                    <li>Pick the “worst” billionaire in as many matchups as you want.</li>
+                    <li>Submit once per round (your device gets a unique voter ID).</li>
+                    <li>Winners advance. Results unlock after you vote.</li>
+                </ul>
+            </div>
+        </div>
+    `;
+}
+
+// Social sharing helpers
+function shareLinkedIn() {
+    const url = encodeURIComponent(canonicalUrl());
+    const text = encodeURIComponent("Vote in Worst Billionaire 2025.");
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${text}`, "_blank");
+}
+function shareReddit() {
+    const url = encodeURIComponent(canonicalUrl());
+    const title = encodeURIComponent("Worst Billionaire 2025 — vote now");
+    window.open(`https://www.reddit.com/submit?url=${url}&title=${title}`, "_blank");
+}
+function shareBluesky() {
+    const text = encodeURIComponent(`Worst Billionaire 2025 — vote now: ${canonicalUrl()}`);
+    window.open(`https://bsky.app/intent/compose?text=${text}`, "_blank");
+}
+function shareEmail() {
+    const subject = encodeURIComponent("Vote: Worst Billionaire 2025");
+    const body = encodeURIComponent(`Vote here: ${canonicalUrl()}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+// Generate and download a shareable image with current matchup info
+function downloadShareImage() {
+    const round = getCurrentRound();
+    let roundName;
+    switch (round) {
+        case 1: roundName = "Round of 16"; break;
+        case 2: roundName = "Quarterfinals"; break;
+        case 3: roundName = "Semifinals"; break;
+        case 4: roundName = "Final"; break;
+        default: roundName = "Tournament";
+    }
+    // Default names and avatars
+    let a = "Billionaire A", b = "Billionaire B", avA = "💰", avB = "🪙";
+    try {
+        const matchups = Object.values(state.tournamentData?.matchups || {});
+        if (matchups.length) {
+            const first = matchups[0];
+            if (first?.candidates?.length === 2) {
+                const [idA, idB] = first.candidates;
+                a = BILLIONAIRES[idA]?.name || a;
+                b = BILLIONAIRES[idB]?.name || b;
+                avA = BILLIONAIRES[idA]?.avatar || avA;
+                avB = BILLIONAIRES[idB]?.avatar || avB;
+            }
+        }
+    } catch (_) {}
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 630;
+    const ctx = canvas.getContext("2d");
+    // Background
+    ctx.fillStyle = "#0b0b0b";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Title
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 64px system-ui, -apple-system, Segoe UI, Roboto";
+    ctx.fillText("WORST BILLIONAIRE 2025", 70, 120);
+    // Round
+    ctx.fillStyle = "#bdbdbd";
+    ctx.font = "bold 28px system-ui, -apple-system, Segoe UI, Roboto";
+    ctx.fillText(`${roundName} · Vote now`, 70, 170);
+    // Matchup text
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 44px system-ui, -apple-system, Segoe UI, Roboto";
+    ctx.fillText(`${avA}  ${a}`, 70, 280);
+    ctx.fillText(`vs`, 70, 350);
+    ctx.fillText(`${avB}  ${b}`, 70, 420);
+    // URL
+    ctx.fillStyle = "#7ddc6f";
+    ctx.font = "bold 28px system-ui, -apple-system, Segoe UI, Roboto";
+    const urlText = canonicalUrl().replace(/^https?:\/\//, "");
+    ctx.fillText(urlText, 70, 540);
+    // Download
+    const aTag = document.createElement("a");
+    aTag.href = canvas.toDataURL("image/png");
+    aTag.download = "worst-billionaire-2025.png";
+    aTag.click();
+}
     
     // ==========================================
     // BILLIONAIRE DATA
@@ -1342,19 +1462,28 @@
     async function submitVotes(selections) {
         console.log('Submitting votes:', { visitorId: state.visitorId, selections });
         
-        // Try to send to API if configured
+        // Try to send to API if configured; use sendBeacon/no-cors to avoid CORS issues.
         if (CONFIG.apiUrl) {
+            const payload = {
+                action: 'submitVotes',
+                visitorId: state.visitorId,
+                round: getCurrentRound(),
+                votes: selections
+            };
             try {
-                await fetch(CONFIG.apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'submitVotes',
-                        visitorId: state.visitorId,
-                        round: getCurrentRound(),
-                        votes: selections
-                    })
-                });
+                const body = JSON.stringify(payload);
+                if (navigator.sendBeacon) {
+                    const blob = new Blob([body], { type: 'application/json' });
+                    navigator.sendBeacon(CONFIG.apiUrl, blob);
+                } else {
+                    // no-cors so the request will send even if response cannot be read
+                    fetch(CONFIG.apiUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body
+                    }).catch(() => {});
+                }
             } catch (e) {
                 console.error('Submit error:', e);
             }
@@ -1363,9 +1492,9 @@
         // Always save locally
         const currentTotal = parseInt(localStorage.getItem('wb_totalVotes') || '0');
         localStorage.setItem('wb_totalVotes', currentTotal + Object.keys(selections).length);
-        // Save locally
+        // Save locally - merge selections into existing round votes
         const round = getCurrentRound();
-        state.votes[`round${round}`] = selections;
+        state.votes[`round${round}`] = { ...(state.votes[`round${round}`] || {}), ...selections };
         localStorage.setItem('wb_votes', JSON.stringify(state.votes));
         state.hasSubmittedThisRound = true;
         
@@ -1502,6 +1631,11 @@
             <div class="share-strip">
                 <button class="share-btn twitter" onclick="shareTwitter()">𝕏 Share</button>
                 <button class="share-btn facebook" onclick="shareFacebook()">Facebook</button>
+                <button class="share-btn linkedin" onclick="shareLinkedIn()">LinkedIn</button>
+                <button class="share-btn reddit" onclick="shareReddit()">Reddit</button>
+                <button class="share-btn bluesky" onclick="shareBluesky()">Bluesky</button>
+                <button class="share-btn email" onclick="shareEmail()">Email</button>
+                <button class="share-btn download" onclick="downloadShareImage()">🖼️ Image</button>
                 <button class="share-btn copy" onclick="copyLink()">🔗 Copy Link</button>
             </div>
         `;
@@ -1530,6 +1664,7 @@
         const hasVotedAll = Object.keys(prevVotes).length === matchups.length;
         
         main.innerHTML = `
+            ${renderScheduleAndExplainer()}
             <div class="countdown-wrap">
                 <div class="countdown-label">VOTING CLOSES IN</div>
                 <div class="countdown" id="countdown"></div>
@@ -1615,6 +1750,11 @@
             <div class="share-strip">
                 <button class="share-btn twitter" onclick="shareTwitter()">𝕏 Share</button>
                 <button class="share-btn facebook" onclick="shareFacebook()">Facebook</button>
+                <button class="share-btn linkedin" onclick="shareLinkedIn()">LinkedIn</button>
+                <button class="share-btn reddit" onclick="shareReddit()">Reddit</button>
+                <button class="share-btn bluesky" onclick="shareBluesky()">Bluesky</button>
+                <button class="share-btn email" onclick="shareEmail()">Email</button>
+                <button class="share-btn download" onclick="downloadShareImage()">🖼️ Image</button>
                 <button class="share-btn copy" onclick="copyLink()">🔗 Copy Link</button>
             </div>
         `;
@@ -1703,6 +1843,11 @@
             <div class="share-strip">
                 <button class="share-btn twitter" onclick="shareTwitter()">𝕏 Share Results</button>
                 <button class="share-btn facebook" onclick="shareFacebook()">Facebook</button>
+                <button class="share-btn linkedin" onclick="shareLinkedIn()">LinkedIn</button>
+                <button class="share-btn reddit" onclick="shareReddit()">Reddit</button>
+                <button class="share-btn bluesky" onclick="shareBluesky()">Bluesky</button>
+                <button class="share-btn email" onclick="shareEmail()">Email</button>
+                <button class="share-btn download" onclick="downloadShareImage()">🖼️ Image</button>
                 <button class="share-btn copy" onclick="copyLink()">🔗 Copy Link</button>
             </div>
             
@@ -1791,6 +1936,11 @@
             <div class="share-strip" style="padding: 50px 0;">
                 <button class="share-btn twitter" onclick="shareTwitter()">𝕏 Share the Verdict</button>
                 <button class="share-btn facebook" onclick="shareFacebook()">Facebook</button>
+                <button class="share-btn linkedin" onclick="shareLinkedIn()">LinkedIn</button>
+                <button class="share-btn reddit" onclick="shareReddit()">Reddit</button>
+                <button class="share-btn bluesky" onclick="shareBluesky()">Bluesky</button>
+                <button class="share-btn email" onclick="shareEmail()">Email</button>
+                <button class="share-btn download" onclick="downloadShareImage()">🖼️ Image</button>
                 <button class="share-btn copy" onclick="copyLink()">🔗 Copy Link</button>
             </div>
             
@@ -1860,7 +2010,10 @@
     }
     
     async function handleSubmitVotes() {
-        if (Object.keys(state.selections).length === 0) return;
+        if (Object.keys(state.selections).length === 0) {
+            alert('Pick at least one matchup before submitting.');
+            return;
+        }
         
         const result = await submitVotes(state.selections);
         
@@ -1921,15 +2074,15 @@
             text = `I'm voting in the Worst Billionaire 2025 tournament. Who's YOUR pick for worst?\n\n`;
         }
         
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(location.href)}`, '_blank');
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(canonicalUrl())}`, '_blank');
     }
     
     function shareFacebook() {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}`, '_blank');
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl())}`, '_blank');
     }
     
     function copyLink() {
-        navigator.clipboard.writeText(location.href);
+        navigator.clipboard.writeText(canonicalUrl());
         alert('Link copied!');
     }
     
