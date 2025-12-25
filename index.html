@@ -1692,7 +1692,7 @@ function downloadShareImage() {
             </div>
             
             <div class="submit-section" id="submitSection">
-                ${state.hasSubmittedThisRound || hasVotedAll ? renderThankYou() : renderSubmitArea(matchups.length)}
+                ${state.hasSubmittedThisRound ? renderThankYou() : renderSubmitArea(matchups.length)}
             </div>
             
             ${renderPastRounds()}
