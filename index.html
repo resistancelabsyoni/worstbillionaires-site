@@ -1335,18 +1335,23 @@ function downloadShareImage() {
     // ==========================================
     // STATE
     // ==========================================
+    // State for the client.  We no longer persist the visitorId or votes between sessions
+    // so that each page visit starts fresh and users can vote multiple times.  The visitorId is
+    // generated for each session without being stored in localStorage, and previous votes are
+    // not loaded from localStorage.
     let state = {
-        visitorId: localStorage.getItem('wb_visitor') || generateVisitorId(),
+        visitorId: generateVisitorId(),
         email: localStorage.getItem('wb_email') || null,
-        votes: JSON.parse(localStorage.getItem('wb_votes') || '{}'),
+        votes: {},
         selections: {},
         tournamentData: null,
         hasSubmittedThisRound: false
     };
     
     function generateVisitorId() {
+        // Generate a unique identifier for this session.  We intentionally do not persist
+        // the visitorId to localStorage so that each page visit is treated as a new user.
         const id = 'v_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-        localStorage.setItem('wb_visitor', id);
         return id;
     }
     
@@ -1501,10 +1506,10 @@ function downloadShareImage() {
         const round = getCurrentRound();
         state.votes[`round${round}`] = { ...(state.votes[`round${round}`] || {}), ...selections };
         localStorage.setItem('wb_votes', JSON.stringify(state.votes));
-        // Mark this round as submitted so we don't allow a second vote
+        // Mark this round as submitted in state only.  We no longer persist this flag so
+        // that future visits to the site start with a fresh ballot.  Users can still
+        // submit multiple times by refreshing or returning later.
         state.hasSubmittedThisRound = true;
-        localStorage.setItem('wb_submitted_round' + round, 'true');
-        
         return { success: true };
     }
     
@@ -1669,11 +1674,8 @@ function downloadShareImage() {
         const roundConfig = CONFIG.rounds[round - 1];
         const prevVotes = state.votes[`round${round}`] || {};
         const hasVotedAll = Object.keys(prevVotes).length === matchups.length;
-        // Check if this round has already been submitted in a previous session
-        const storedSubmit = localStorage.getItem('wb_submitted_round' + round);
-        if (storedSubmit === 'true') {
-            state.hasSubmittedThisRound = true;
-        }
+        // We intentionally do not check for a previous submission so that the user always
+        // starts with a fresh ballot each time they visit the site.
         
         main.innerHTML = `
             ${renderScheduleAndExplainer()}
