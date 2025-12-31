@@ -129,11 +129,13 @@ describe('/votes endpoint validation', () => {
   });
 
   it('should accept valid votes', async () => {
+    // Use unique email to avoid UNIQUE constraint conflicts
+    const uniqueEmail = `test-${Date.now()}@example.com`;
     const response = await worker.fetch('http://localhost/votes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'test@example.com',
+        email: uniqueEmail,
         votes: {
           r1m1: 'elon_musk',
           r1m2: 'jeff_bezos',
@@ -145,5 +147,50 @@ describe('/votes endpoint validation', () => {
     const data = await response.json();
     expect(data.success).toBe(true);
     expect(data.votesSubmitted).toBe(2);
+  });
+});
+
+describe('CORS configuration', () => {
+  let worker: any;
+
+  beforeAll(async () => {
+    worker = await unstable_dev('src/index.ts', {
+      experimental: { disableExperimentalWarning: true },
+    });
+  });
+
+  afterAll(async () => {
+    await worker.stop();
+  });
+
+  it('should reject requests from unauthorized origins', async () => {
+    const response = await worker.fetch('http://localhost/tournament', {
+      method: 'OPTIONS',
+      headers: { Origin: 'https://evil.com' },
+    });
+
+    const allowOrigin = response.headers.get('Access-Control-Allow-Origin');
+    expect(allowOrigin).not.toBe('*');
+    expect(allowOrigin).not.toBe('https://evil.com');
+  });
+
+  it('should allow requests from worstbillionaires.com', async () => {
+    const response = await worker.fetch('http://localhost/tournament', {
+      method: 'OPTIONS',
+      headers: { Origin: 'https://worstbillionaires.com' },
+    });
+
+    const allowOrigin = response.headers.get('Access-Control-Allow-Origin');
+    expect(allowOrigin).toBe('https://worstbillionaires.com');
+  });
+
+  it('should allow requests from localhost for development', async () => {
+    const response = await worker.fetch('http://localhost/tournament', {
+      method: 'OPTIONS',
+      headers: { Origin: 'http://localhost:5173' },
+    });
+
+    const allowOrigin = response.headers.get('Access-Control-Allow-Origin');
+    expect(allowOrigin).toBe('http://localhost:5173');
   });
 });
