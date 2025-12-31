@@ -1,5 +1,6 @@
 import { INITIAL_BRACKET } from '../config/tournament';
 import type { VoteCountResult, VoteResult } from '../types/database';
+import { TournamentError } from '../lib/errors';
 
 export async function getMatchups(
   db: D1Database,
@@ -25,7 +26,7 @@ export async function getMatchups(
       .all();
 
     if (!voteCounts.results || voteCounts.results.length === 0) {
-      throw new Error(`No votes found for round ${prevRound} matchup ${matchup.matchupId}`);
+      throw new TournamentError(`No votes found for round ${prevRound} matchup ${matchup.matchupId}`);
     }
 
     // Find winner (most votes)

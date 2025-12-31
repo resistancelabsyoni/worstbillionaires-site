@@ -7,6 +7,7 @@ import { hashEmail } from './lib/crypto';
 import { RegisterSchema, VotesSchema } from './lib/validation';
 import { z } from 'zod';
 import { votesLimiter, registerLimiter, tournamentLimiter } from './lib/rate-limiter';
+import { AppError, ValidationError, RateLimitError, ForbiddenError } from './lib/errors';
 
 type Bindings = {
   DB: D1Database;
@@ -41,12 +42,50 @@ function getClientId(c: any): string {
   return c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown';
 }
 
+// Error handling middleware
+app.onError((err, c) => {
+  console.error('Error:', err);
+
+  // Handle Zod validation errors - check by name as well since instanceof may not work in all environments
+  if (err instanceof z.ZodError || err.name === 'ZodError') {
+    return c.json(
+      {
+        error: 'Invalid input',
+        code: 'VALIDATION_ERROR',
+        details: (err as any).errors || (err as any).issues,
+      },
+      400
+    );
+  }
+
+  // Handle custom application errors
+  if (err instanceof AppError) {
+    return c.json(
+      {
+        error: err.message,
+        code: err.code,
+        ...(err instanceof ValidationError && { details: err.details }),
+      },
+      err.statusCode
+    );
+  }
+
+  // Handle unknown errors (don't expose internal details)
+  return c.json(
+    {
+      error: 'Internal server error',
+      code: 'INTERNAL_ERROR',
+    },
+    500
+  );
+});
+
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
 app.get('/tournament', async (c) => {
   const clientId = getClientId(c);
   if (!tournamentLimiter.check(clientId)) {
-    return c.json({ error: 'Rate limit exceeded. Please try again later.' }, 429);
+    throw new RateLimitError('Too many tournament queries. Please try again later.');
   }
 
   const db = c.env.DB;
@@ -81,117 +120,101 @@ app.get('/tournament', async (c) => {
 });
 
 app.post('/votes', async (c) => {
-  try {
-    const clientId = getClientId(c);
-    if (!votesLimiter.check(clientId)) {
-      return c.json({ error: 'Rate limit exceeded. Please try again later.' }, 429);
-    }
-
-    const body = await c.req.json();
-    const validated = VotesSchema.parse(body);
-    const { email, votes } = validated;
-
-    if (!isVotingOpen()) {
-      return c.json({ error: 'Voting is not currently open' }, 403);
-    }
-
-    const currentRound = getCurrentRound();
-    const validMatchups = await getMatchups(c.env.DB, currentRound);
-
-    // Create lookup map for O(1) validation
-    const matchupMap = new Map(
-      validMatchups.map((m) => [m.matchupId, new Set(m.candidates)])
-    );
-
-    const emailHash = await hashEmail(email);
-    const db = c.env.DB;
-
-    let votesSubmitted = 0;
-    const skipped: string[] = [];
-    const invalid: string[] = [];
-
-    for (const [matchupId, candidateId] of Object.entries(votes)) {
-      // Validate matchup exists in current round
-      const validCandidates = matchupMap.get(matchupId);
-      if (!validCandidates) {
-        invalid.push(matchupId);
-        continue;
-      }
-
-      // Validate candidate is in this matchup
-      if (!validCandidates.has(candidateId)) {
-        invalid.push(`${matchupId}:${candidateId}`);
-        continue;
-      }
-
-      try {
-        await db
-          .prepare(
-            'INSERT INTO votes (email_hash, matchup_id, candidate_id, round) VALUES (?, ?, ?, ?)'
-          )
-          .bind(emailHash, matchupId, candidateId, currentRound)
-          .run();
-        votesSubmitted++;
-      } catch (err: any) {
-        if (err.message?.includes('UNIQUE')) {
-          skipped.push(matchupId);
-          continue;
-        }
-        throw err;
-      }
-    }
-
-    return c.json({
-      success: true,
-      votesSubmitted,
-      skipped,
-      invalid,
-    });
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return c.json({ error: 'Invalid input', details: err.errors }, 400);
-    }
-    console.error('Voting error:', err);
-    return c.json({ error: 'Internal server error' }, 500);
+  const clientId = getClientId(c);
+  if (!votesLimiter.check(clientId)) {
+    throw new RateLimitError('Too many votes. Please try again later.');
   }
+
+  const body = await c.req.json();
+  const validated = VotesSchema.parse(body);
+  const { email, votes } = validated;
+
+  if (!isVotingOpen()) {
+    throw new ForbiddenError('Voting is not currently open');
+  }
+
+  const currentRound = getCurrentRound();
+  const validMatchups = await getMatchups(c.env.DB, currentRound);
+
+  // Create lookup map for O(1) validation
+  const matchupMap = new Map(
+    validMatchups.map((m) => [m.matchupId, new Set(m.candidates)])
+  );
+
+  const emailHash = await hashEmail(email);
+  const db = c.env.DB;
+
+  let votesSubmitted = 0;
+  const skipped: string[] = [];
+  const invalid: string[] = [];
+
+  for (const [matchupId, candidateId] of Object.entries(votes)) {
+    // Validate matchup exists in current round
+    const validCandidates = matchupMap.get(matchupId);
+    if (!validCandidates) {
+      invalid.push(matchupId);
+      continue;
+    }
+
+    // Validate candidate is in this matchup
+    if (!validCandidates.has(candidateId)) {
+      invalid.push(`${matchupId}:${candidateId}`);
+      continue;
+    }
+
+    try {
+      await db
+        .prepare(
+          'INSERT INTO votes (email_hash, matchup_id, candidate_id, round) VALUES (?, ?, ?, ?)'
+        )
+        .bind(emailHash, matchupId, candidateId, currentRound)
+        .run();
+      votesSubmitted++;
+    } catch (err: any) {
+      if (err.message?.includes('UNIQUE')) {
+        skipped.push(matchupId);
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  return c.json({
+    success: true,
+    votesSubmitted,
+    skipped,
+    invalid,
+  });
 });
 
 app.post('/register', async (c) => {
-  try {
-    const clientId = getClientId(c);
-    if (!registerLimiter.check(clientId)) {
-      return c.json({ error: 'Rate limit exceeded. Please try again later.' }, 429);
-    }
-
-    const body = await c.req.json();
-    const validated = RegisterSchema.parse(body);
-
-    const db = c.env.DB;
-
-    await db
-      .prepare(
-        'INSERT INTO contacts (email, name, zip, opt_in) VALUES (?, ?, ?, ?) ' +
-        'ON CONFLICT(email) DO UPDATE SET name=?, zip=?, opt_in=?'
-      )
-      .bind(
-        validated.email,
-        validated.name || null,
-        validated.zip || null,
-        validated.optIn ? 1 : 0,
-        validated.name || null,
-        validated.zip || null,
-        validated.optIn ? 1 : 0
-      )
-      .run();
-
-    return c.json({ success: true });
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return c.json({ error: 'Invalid input', details: err.errors }, 400);
-    }
-    console.error('Registration error:', err);
-    return c.json({ error: 'Internal server error' }, 500);
+  const clientId = getClientId(c);
+  if (!registerLimiter.check(clientId)) {
+    throw new RateLimitError('Too many registrations. Please try again later.');
   }
+
+  const body = await c.req.json();
+  const validated = RegisterSchema.parse(body);
+
+  const db = c.env.DB;
+
+  await db
+    .prepare(
+      'INSERT INTO contacts (email, name, zip, opt_in) VALUES (?, ?, ?, ?) ' +
+      'ON CONFLICT(email) DO UPDATE SET name=?, zip=?, opt_in=?'
+    )
+    .bind(
+      validated.email,
+      validated.name || null,
+      validated.zip || null,
+      validated.optIn ? 1 : 0,
+      validated.name || null,
+      validated.zip || null,
+      validated.optIn ? 1 : 0
+    )
+    .run();
+
+  return c.json({ success: true });
 });
 
 export default app;
