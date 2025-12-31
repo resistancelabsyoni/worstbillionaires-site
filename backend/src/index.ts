@@ -3,6 +3,8 @@ import { cors } from 'hono/cors';
 import { getCurrentRound, isVotingOpen } from './config/tournament';
 import { getMatchups, getVoteCounts } from './services/tournament';
 import { hashEmail } from './lib/crypto';
+import { RegisterSchema, VotesSchema } from './lib/validation';
+import { z } from 'zod';
 
 type Bindings = {
   DB: D1Database;
@@ -93,20 +95,36 @@ app.post('/votes', async (c) => {
 });
 
 app.post('/register', async (c) => {
-  const body = await c.req.json();
-  const { email, name, zip, optIn } = body;
+  try {
+    const body = await c.req.json();
+    const validated = RegisterSchema.parse(body);
 
-  if (!email) {
-    return c.json({ error: 'Missing required field: email' }, 400);
+    const db = c.env.DB;
+
+    await db
+      .prepare(
+        'INSERT INTO contacts (email, name, zip, opt_in) VALUES (?, ?, ?, ?) ' +
+        'ON CONFLICT(email) DO UPDATE SET name=?, zip=?, opt_in=?'
+      )
+      .bind(
+        validated.email,
+        validated.name || null,
+        validated.zip || null,
+        validated.optIn ? 1 : 0,
+        validated.name || null,
+        validated.zip || null,
+        validated.optIn ? 1 : 0
+      )
+      .run();
+
+    return c.json({ success: true });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return c.json({ error: 'Invalid input', details: err.errors }, 400);
+    }
+    console.error('Registration error:', err);
+    return c.json({ error: 'Internal server error' }, 500);
   }
-
-  const db = c.env.DB;
-  await db
-    .prepare('INSERT INTO contacts (email, name, zip, opt_in) VALUES (?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET name=?, zip=?, opt_in=?')
-    .bind(email, name || null, zip || null, optIn ? 1 : 0, name || null, zip || null, optIn ? 1 : 0)
-    .run();
-
-  return c.json({ success: true });
 });
 
 export default app;
