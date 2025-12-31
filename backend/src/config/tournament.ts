@@ -1,19 +1,19 @@
 export const ROUNDS = [
-  { round: 1, start: '2025-01-15T00:00:00Z', end: '2025-01-22T23:59:59Z' },
-  { round: 2, start: '2025-01-23T00:00:00Z', end: '2025-01-30T23:59:59Z' },
-  { round: 3, start: '2025-01-31T00:00:00Z', end: '2025-02-07T23:59:59Z' },
-  { round: 4, start: '2025-02-08T00:00:00Z', end: '2025-02-15T23:59:59Z' },
+  { round: 1, start: '2025-12-31T00:00:00Z', end: '2026-01-07T23:59:59Z' },
+  { round: 2, start: '2026-01-08T00:00:00Z', end: '2026-01-15T23:59:59Z' },
+  { round: 3, start: '2026-01-16T00:00:00Z', end: '2026-01-23T23:59:59Z' },
+  { round: 4, start: '2026-01-24T00:00:00Z', end: '2026-01-31T23:59:59Z' },
 ];
 
 export const INITIAL_BRACKET = [
-  { matchupId: 'r1m1', candidates: ['elon-musk', 'jeff-bezos'] },
-  { matchupId: 'r1m2', candidates: ['mark-zuckerberg', 'bill-gates'] },
-  { matchupId: 'r1m3', candidates: ['larry-ellison', 'warren-buffett'] },
-  { matchupId: 'r1m4', candidates: ['larry-page', 'sergey-brin'] },
-  { matchupId: 'r1m5', candidates: ['steve-ballmer', 'michael-bloomberg'] },
-  { matchupId: 'r1m6', candidates: ['jim-walton', 'rob-walton'] },
-  { matchupId: 'r1m7', candidates: ['alice-walton', 'mackenzie-scott'] },
-  { matchupId: 'r1m8', candidates: ['bernard-arnault', 'francoise-bettencourt-meyers'] },
+  { matchupId: 'r1m1', candidates: ['musk', 'andreessen'] },
+  { matchupId: 'r1m2', candidates: ['trump', 'sacks'] },
+  { matchupId: 'r1m3', candidates: ['bezos', 'zuckerberg'] },
+  { matchupId: 'r1m4', candidates: ['adelson', 'sun'] },
+  { matchupId: 'r1m5', candidates: ['ellison', 'thiel'] },
+  { matchupId: 'r1m6', candidates: ['zhao', 'murdoch'] },
+  { matchupId: 'r1m7', candidates: ['schwarzman', 'adani'] },
+  { matchupId: 'r1m8', candidates: ['koch', 'dimon'] },
 ];
 
 export function getCurrentRound(): number {
