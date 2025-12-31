@@ -970,10 +970,8 @@
     // CONFIG
     // ==========================================
     const CONFIG = {
-        // Google Apps Script URL - set this up later for real vote tracking
-        // For now, votes are stored locally in the browser
-        // Backend API URL to record votes and signups
-        apiUrl: 'https://script.google.com/macros/s/AKfycbzapu8t6Ifha5sU5WnfackpaCY0PwUQMRa5x02uzS83eoZcmrjcl9QppAG_0pi1akIswQ/exec',
+        // Cloudflare Worker API URL
+        apiUrl: 'https://worst-billionaires-api.rvkgq2t45r.workers.dev',
         
         rounds: [
             { name: 'Round of 16', start: '2025-12-24T00:00:00', end: '2026-01-05T23:59:59' },
@@ -1401,15 +1399,16 @@ function downloadShareImage() {
         if (!CONFIG.apiUrl) {
             return generateLocalTournamentData();
         }
-        
+
         try {
-            const res = await fetch(`${CONFIG.apiUrl}?action=getTournament`, { cache: "no-store" });
+            const res = await fetch(`${CONFIG.apiUrl}/tournament`, { cache: "no-store" });
+            if (!res.ok) {
+                throw new Error(`Failed to fetch tournament: ${res.statusText}`);
+            }
             const json = await res.json();
-            // Some backends respond with { ok:true, data:{...} }
-            const data = (json && json.data) ? json.data : json;
             // Validate that matchups exist and have at least one entry; otherwise fallback to local
-            if (data && data.matchups && typeof data.matchups === 'object' && Object.keys(data.matchups).length > 0) {
-                return data;
+            if (json && json.matchups && typeof json.matchups === 'object' && Object.keys(json.matchups).length > 0) {
+                return json;
             }
             // Fallback to local data if no matchups or invalid structure
             return generateLocalTournamentData();
@@ -1475,38 +1474,38 @@ function downloadShareImage() {
     
     async function submitVotes(selections) {
         console.log('Submitting votes:', { visitorId: state.visitorId, selections });
-        
-        // Try to send to API if configured; use sendBeacon/no-cors to avoid CORS issues.
+
+        // Try to send to API if configured
         if (CONFIG.apiUrl) {
-            // Provide both visitorId and an email-like identifier.  If the user hasn’t provided an email,
-            // generate a dummy email from the visitorId so older backends requiring an email will accept the vote.
+            // Generate email from visitorId if user hasn't provided one
             const emailForBackend = state.email || `${state.visitorId}@example.invalid`;
             const payload = {
-                action: 'submitVotes',
-                visitorId: state.visitorId,
                 email: emailForBackend,
-                round: getCurrentRound(),
                 votes: selections
             };
             try {
-                const body = JSON.stringify(payload);
-                if (navigator.sendBeacon) {
-                    const blob = new Blob([body], { type: 'application/json' });
-                    navigator.sendBeacon(CONFIG.apiUrl, blob);
-                } else {
-                    // no-cors so the request will send even if response cannot be read
-                    fetch(CONFIG.apiUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body
-                    }).catch(() => {});
+                const res = await fetch(`${CONFIG.apiUrl}/votes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Failed to submit votes: ${res.statusText}`);
+                }
+
+                const result = await res.json();
+
+                // Log skipped votes for debugging
+                if (result.skipped && result.skipped.length > 0) {
+                    console.log('Skipped duplicate votes for matchups:', result.skipped);
                 }
             } catch (e) {
                 console.error('Submit error:', e);
+                // Continue anyway - we'll save locally
             }
         }
-        
+
         // Always save locally
         const currentTotal = parseInt(localStorage.getItem('wb_totalVotes') || '0');
         localStorage.setItem('wb_totalVotes', currentTotal + Object.keys(selections).length);
@@ -1523,24 +1522,30 @@ function downloadShareImage() {
     
     async function submitEmail(email, name, zip, optIn) {
         console.log('Submitting email:', { email, name, zip, optIn });
-        
+
         // Try to send to API if configured
         if (CONFIG.apiUrl) {
             try {
-                await fetch(CONFIG.apiUrl, {
+                const res = await fetch(`${CONFIG.apiUrl}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'registerEmail', email, name, zip, optIn, visitorId: state.visitorId })
+                    body: JSON.stringify({ email, name, zip, optIn })
                 });
+
+                if (!res.ok) {
+                    throw new Error(`Failed to register: ${res.statusText}`);
+                }
+
+                await res.json();
             } catch (e) {
                 console.error('Email error:', e);
             }
         }
-        
+
         // Always save locally
         state.email = email;
         localStorage.setItem('wb_email', email);
-        
+
         return { success: true };
     }
     
