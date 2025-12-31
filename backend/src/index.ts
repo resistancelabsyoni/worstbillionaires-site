@@ -6,6 +6,7 @@ import { getMatchups } from './services/matchups';
 import { hashEmail } from './lib/crypto';
 import { RegisterSchema, VotesSchema } from './lib/validation';
 import { z } from 'zod';
+import { votesLimiter, registerLimiter, tournamentLimiter } from './lib/rate-limiter';
 
 type Bindings = {
   DB: D1Database;
@@ -34,9 +35,20 @@ app.use('/*', cors({
   credentials: true,
 }));
 
+// Helper function to get client identifier
+function getClientId(c: any): string {
+  // Use CF-Connecting-IP header (Cloudflare provides this)
+  return c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown';
+}
+
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
 app.get('/tournament', async (c) => {
+  const clientId = getClientId(c);
+  if (!tournamentLimiter.check(clientId)) {
+    return c.json({ error: 'Rate limit exceeded. Please try again later.' }, 429);
+  }
+
   const db = c.env.DB;
   const currentRound = getCurrentRound();
 
@@ -70,6 +82,11 @@ app.get('/tournament', async (c) => {
 
 app.post('/votes', async (c) => {
   try {
+    const clientId = getClientId(c);
+    if (!votesLimiter.check(clientId)) {
+      return c.json({ error: 'Rate limit exceeded. Please try again later.' }, 429);
+    }
+
     const body = await c.req.json();
     const validated = VotesSchema.parse(body);
     const { email, votes } = validated;
@@ -141,6 +158,11 @@ app.post('/votes', async (c) => {
 
 app.post('/register', async (c) => {
   try {
+    const clientId = getClientId(c);
+    if (!registerLimiter.check(clientId)) {
+      return c.json({ error: 'Rate limit exceeded. Please try again later.' }, 429);
+    }
+
     const body = await c.req.json();
     const validated = RegisterSchema.parse(body);
 
