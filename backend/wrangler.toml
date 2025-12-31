@@ -5,4 +5,4 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "worst-billionaires"
-database_id = ""  # Will be filled after wrangler d1 create
+database_id = "a86a51a9-4328-4655-be19-6f7c7c695cee"
