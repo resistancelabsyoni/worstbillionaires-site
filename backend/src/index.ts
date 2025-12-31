@@ -13,9 +13,25 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
+const ALLOWED_ORIGINS = [
+  'https://worstbillionaires.com',
+  'https://www.worstbillionaires.com',
+  'http://localhost:5173', // Vite dev server
+  'http://localhost:3000', // Alternative dev port
+];
+
 app.use('/*', cors({
-  origin: '*',
+  origin: (origin) => {
+    // Allow same-origin requests (no Origin header)
+    if (!origin) return origin;
+    // Check if origin is in allowed list
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      return origin;
+    }
+    return null;
+  },
   allowMethods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true,
 }));
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
