@@ -17,7 +17,10 @@ describe('/register endpoint', () => {
   it('should reject missing email', async () => {
     const response = await worker.fetch('http://localhost/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '10.0.0.1',
+      },
       body: JSON.stringify({ name: 'Test' }),
     });
 
@@ -29,7 +32,10 @@ describe('/register endpoint', () => {
   it('should reject invalid email format', async () => {
     const response = await worker.fetch('http://localhost/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '10.0.0.2',
+      },
       body: JSON.stringify({ email: 'notanemail' }),
     });
 
@@ -41,7 +47,10 @@ describe('/register endpoint', () => {
   it('should reject invalid ZIP code', async () => {
     const response = await worker.fetch('http://localhost/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '10.0.0.3',
+      },
       body: JSON.stringify({ email: 'test@example.com', zip: 'ABCDE' }),
     });
 
@@ -53,7 +62,10 @@ describe('/register endpoint', () => {
   it('should accept valid registration', async () => {
     const response = await worker.fetch('http://localhost/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '10.0.0.4',
+      },
       body: JSON.stringify({
         email: 'test@example.com',
         name: 'Test User',
@@ -84,7 +96,10 @@ describe('/votes endpoint validation', () => {
   it('should reject invalid matchup ID format', async () => {
     const response = await worker.fetch('http://localhost/votes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '10.1.0.1',
+      },
       body: JSON.stringify({
         email: 'test@example.com',
         votes: { invalid: 'elon_musk' },
@@ -99,7 +114,10 @@ describe('/votes endpoint validation', () => {
   it('should reject votes for non-existent matchup', async () => {
     const response = await worker.fetch('http://localhost/votes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '10.1.0.2',
+      },
       body: JSON.stringify({
         email: 'test@example.com',
         votes: { r5m1: 'elon_musk' },
@@ -115,7 +133,10 @@ describe('/votes endpoint validation', () => {
   it('should reject votes for wrong candidate in matchup', async () => {
     const response = await worker.fetch('http://localhost/votes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '10.1.0.3',
+      },
       body: JSON.stringify({
         email: 'test@example.com',
         votes: { r1m1: 'jeff_bezos' }, // jeff_bezos is in r1m2, not r1m1
@@ -133,7 +154,10 @@ describe('/votes endpoint validation', () => {
     const uniqueEmail = `test-${Date.now()}@example.com`;
     const response = await worker.fetch('http://localhost/votes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '10.1.0.4',
+      },
       body: JSON.stringify({
         email: uniqueEmail,
         votes: {
@@ -192,5 +216,64 @@ describe('CORS configuration', () => {
 
     const allowOrigin = response.headers.get('Access-Control-Allow-Origin');
     expect(allowOrigin).toBe('http://localhost:5173');
+  });
+});
+
+describe('Rate limiting', () => {
+  let worker: any;
+
+  beforeAll(async () => {
+    worker = await unstable_dev('src/index.ts', {
+      experimental: { disableExperimentalWarning: true },
+    });
+  });
+
+  afterAll(async () => {
+    await worker.stop();
+  });
+
+  it('should enforce rate limit on /votes endpoint', async () => {
+    // Send 6 requests (limit is 5 per minute)
+    const requests = Array.from({ length: 6 }, (_, i) =>
+      worker.fetch('http://localhost/votes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'CF-Connecting-IP': '1.2.3.4',
+        },
+        body: JSON.stringify({
+          email: `test${i}@example.com`,
+          votes: { r1m1: 'elon_musk' },
+        }),
+      })
+    );
+
+    const responses = await Promise.all(requests);
+    const statuses = responses.map((r) => r.status);
+
+    // First 5 should succeed or fail validation (200/400), last should be rate limited (429)
+    expect(statuses[5]).toBe(429);
+  });
+
+  it('should enforce rate limit on /register endpoint', async () => {
+    // Send 3 requests (limit is 2 per minute)
+    const requests = Array.from({ length: 3 }, (_, i) =>
+      worker.fetch('http://localhost/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'CF-Connecting-IP': '1.2.3.5',
+        },
+        body: JSON.stringify({
+          email: `test${i}@example.com`,
+        }),
+      })
+    );
+
+    const responses = await Promise.all(requests);
+    const statuses = responses.map((r) => r.status);
+
+    // First 2 should succeed, last should be rate limited
+    expect(statuses[2]).toBe(429);
   });
 });
