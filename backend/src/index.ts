@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { getCurrentRound, isVotingOpen } from './config/tournament';
-import { getMatchups, getVoteCounts } from './services/tournament';
+import { getMatchups as getTournamentMatchups, getVoteCounts } from './services/tournament';
+import { getMatchups } from './services/matchups';
 import { hashEmail } from './lib/crypto';
 import { RegisterSchema, VotesSchema } from './lib/validation';
 import { z } from 'zod';
@@ -32,7 +33,7 @@ app.get('/tournament', async (c) => {
     });
   }
 
-  const matchups = await getMatchups(db, currentRound);
+  const matchups = await getTournamentMatchups(db, currentRound);
   const voteCounts = await getVoteCounts(db, currentRound);
 
   // Calculate total votes
@@ -52,46 +53,74 @@ app.get('/tournament', async (c) => {
 });
 
 app.post('/votes', async (c) => {
-  const body = await c.req.json();
-  const { email, votes } = body;
+  try {
+    const body = await c.req.json();
+    const validated = VotesSchema.parse(body);
+    const { email, votes } = validated;
 
-  if (!email || !votes) {
-    return c.json({ error: 'Missing required fields: email, votes' }, 400);
-  }
+    if (!isVotingOpen()) {
+      return c.json({ error: 'Voting is not currently open' }, 403);
+    }
 
-  if (!isVotingOpen()) {
-    return c.json({ error: 'Voting is not currently open' }, 403);
-  }
+    const currentRound = getCurrentRound();
+    const validMatchups = await getMatchups(c.env.DB, currentRound);
 
-  const currentRound = getCurrentRound();
-  const emailHash = await hashEmail(email);
-  const db = c.env.DB;
+    // Create lookup map for O(1) validation
+    const matchupMap = new Map(
+      validMatchups.map((m) => [m.matchupId, new Set(m.candidates)])
+    );
 
-  let votesSubmitted = 0;
-  const skipped: string[] = [];
+    const emailHash = await hashEmail(email);
+    const db = c.env.DB;
 
-  // votes is { matchupId: candidateId, ... }
-  for (const [matchupId, candidateId] of Object.entries(votes)) {
-    try {
-      await db
-        .prepare('INSERT INTO votes (email_hash, matchup_id, candidate_id, round) VALUES (?, ?, ?, ?)')
-        .bind(emailHash, matchupId, candidateId, currentRound)
-        .run();
-      votesSubmitted++;
-    } catch (err: any) {
-      if (err.message?.includes('UNIQUE')) {
-        skipped.push(matchupId);
+    let votesSubmitted = 0;
+    const skipped: string[] = [];
+    const invalid: string[] = [];
+
+    for (const [matchupId, candidateId] of Object.entries(votes)) {
+      // Validate matchup exists in current round
+      const validCandidates = matchupMap.get(matchupId);
+      if (!validCandidates) {
+        invalid.push(matchupId);
         continue;
       }
-      throw err;
-    }
-  }
 
-  return c.json({
-    success: true,
-    votesSubmitted,
-    skipped,
-  });
+      // Validate candidate is in this matchup
+      if (!validCandidates.has(candidateId)) {
+        invalid.push(`${matchupId}:${candidateId}`);
+        continue;
+      }
+
+      try {
+        await db
+          .prepare(
+            'INSERT INTO votes (email_hash, matchup_id, candidate_id, round) VALUES (?, ?, ?, ?)'
+          )
+          .bind(emailHash, matchupId, candidateId, currentRound)
+          .run();
+        votesSubmitted++;
+      } catch (err: any) {
+        if (err.message?.includes('UNIQUE')) {
+          skipped.push(matchupId);
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    return c.json({
+      success: true,
+      votesSubmitted,
+      skipped,
+      invalid,
+    });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return c.json({ error: 'Invalid input', details: err.errors }, 400);
+    }
+    console.error('Voting error:', err);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
 });
 
 app.post('/register', async (c) => {
