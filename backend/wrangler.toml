@@ -3,7 +3,22 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 workers_dev = true
 
+# Development environment (default)
 [[d1_databases]]
+binding = "DB"
+database_name = "worst-billionaires-dev"
+database_id = "preview_a86a51a9-4328-4655-be19-6f7c7c695cee"
+
+# Production environment
+[env.production]
+[[env.production.d1_databases]]
 binding = "DB"
 database_name = "worst-billionaires"
 database_id = "a86a51a9-4328-4655-be19-6f7c7c695cee"
+
+# Staging environment (optional)
+[env.staging]
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "worst-billionaires-staging"
+database_id = "staging_a86a51a9-4328-4655-be19-6f7c7c695cee"
