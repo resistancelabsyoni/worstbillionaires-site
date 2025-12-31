@@ -66,7 +66,7 @@ app.onError((err, c) => {
         code: err.code,
         ...(err instanceof ValidationError && { details: err.details }),
       },
-      err.statusCode
+      err.statusCode as any
     );
   }
 
