@@ -1,4 +1,5 @@
 import { INITIAL_BRACKET } from '../config/tournament';
+import type { VoteCountResult, VoteResult } from '../types/database';
 
 export async function getMatchups(
   db: D1Database,
@@ -28,7 +29,7 @@ export async function getMatchups(
     }
 
     // Find winner (most votes)
-    const sorted = (voteCounts.results as any[]).sort((a, b) => b.count - a.count);
+    const sorted = (voteCounts.results as unknown as VoteCountResult[]).sort((a, b) => b.count - a.count);
     winners.push(sorted[0].candidate_id);
   }
 
@@ -55,7 +56,7 @@ export async function getVoteCounts(
 
   const counts: Record<string, Record<string, number>> = {};
   for (const vote of votes.results || []) {
-    const { matchup_id, candidate_id } = vote as any;
+    const { matchup_id, candidate_id } = vote as unknown as VoteResult;
     if (!counts[matchup_id]) counts[matchup_id] = {};
     counts[matchup_id][candidate_id] = (counts[matchup_id][candidate_id] || 0) + 1;
   }
