@@ -1,6 +1,7 @@
 name = "worst-billionaires-api"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
+workers_dev = true
 
 [[d1_databases]]
 binding = "DB"
