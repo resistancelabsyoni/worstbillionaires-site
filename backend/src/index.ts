@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { Context, StatusCode } from 'hono';
+import type { Context } from 'hono';
 import { cors } from 'hono/cors';
 import { getCurrentRound, isVotingOpen } from './config/tournament';
 import { getMatchups as getTournamentMatchups, getVoteCounts } from './services/tournament';
@@ -74,7 +74,7 @@ app.onError((err, c) => {
         code: err.code,
         ...(err instanceof ValidationError && { details: err.details }),
       },
-      err.statusCode as StatusCode
+      err.statusCode
     );
   }
 
