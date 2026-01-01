@@ -9,6 +9,7 @@ import { RegisterSchema, VotesSchema } from './lib/validation';
 import { z } from 'zod';
 import { votesLimiter, registerLimiter, tournamentLimiter } from './lib/rate-limiter';
 import { AppError, ValidationError, RateLimitError, ForbiddenError } from './lib/errors';
+import { logger } from './lib/logger';
 
 type Bindings = {
   DB: D1Database;
@@ -46,7 +47,12 @@ function getClientId(c: Context<{ Bindings: Bindings }>): string {
 
 // Error handling middleware
 app.onError((err, c) => {
-  console.error('Error:', err);
+  // Log with structured format
+  logger.error(err, {
+    path: c.req.path,
+    method: c.req.method,
+    clientId: getClientId(c),
+  });
 
   // Handle Zod validation errors
   if (err instanceof z.ZodError) {
