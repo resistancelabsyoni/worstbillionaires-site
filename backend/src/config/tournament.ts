@@ -1,5 +1,3 @@
-// LOCAL TESTING DATES - Set to current time for easy testing
-// TODO: Update these to production dates before deploying
 export const ROUNDS = [
   { round: 1, start: '2025-12-29T00:00:00Z', end: '2026-01-05T23:59:59Z' },
   { round: 2, start: '2026-01-06T00:00:00Z', end: '2026-01-13T23:59:59Z' },
