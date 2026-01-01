@@ -1,6 +1,30 @@
 /**
- * Simple rate limiter using Cloudflare Workers KV (if available)
- * Falls back to in-memory Map for development
+ * In-Memory Rate Limiter for Cloudflare Workers
+ *
+ * LIMITATIONS:
+ * - State is NOT shared between Worker instances
+ * - Rate limits reset when Worker instance is recycled (seconds to minutes)
+ * - Effective only within a single Worker instance's lifetime
+ * - Not suitable for strict rate limiting in high-traffic production
+ *
+ * PRODUCTION CONSIDERATIONS:
+ * For distributed rate limiting across Worker instances, consider:
+ * 1. Cloudflare Durable Objects - Guaranteed single instance per key
+ * 2. Cloudflare KV with TTL - Distributed state with eventual consistency
+ * 3. Cloudflare Rate Limiting API - Native platform feature
+ *
+ * CURRENT USE CASE:
+ * This implementation provides basic protection against:
+ * - Accidental repeated clicks by individual users
+ * - Simple abuse attempts from single IP addresses
+ * - Reducing load on database from rapid-fire requests
+ *
+ * For the Worst Billionaire Tournament use case (low to medium traffic,
+ * non-financial application), this provides adequate protection without
+ * the complexity and cost of distributed rate limiting.
+ *
+ * @see https://developers.cloudflare.com/durable-objects/
+ * @see https://developers.cloudflare.com/kv/
  */
 export class RateLimiter {
   private requests: Map<string, number[]> = new Map();
