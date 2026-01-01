@@ -11,6 +11,7 @@ CREATE TABLE votes (
 CREATE INDEX idx_votes_hash ON votes(email_hash);
 CREATE INDEX idx_votes_matchup ON votes(matchup_id);
 CREATE INDEX idx_votes_round ON votes(round);
+CREATE INDEX idx_votes_email_matchup ON votes(email_hash, matchup_id);
 
 -- Contacts table with plaintext email for outreach
 CREATE TABLE contacts (

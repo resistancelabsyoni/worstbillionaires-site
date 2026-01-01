@@ -51,6 +51,30 @@ The application uses Cloudflare D1 (SQLite) database with different instances pe
 - Staging: `worst-billionaires-staging`
 - Production: `worst-billionaires`
 
+### Database Migrations
+
+Apply migrations to each environment:
+
+**Development (Local):**
+```bash
+npx wrangler d1 execute worst-billionaires-dev --file=migrations/0001_add_composite_index.sql --local
+```
+
+**Staging:**
+```bash
+npx wrangler d1 execute worst-billionaires-staging --file=migrations/0001_add_composite_index.sql
+```
+
+**Production:**
+```bash
+npx wrangler d1 execute worst-billionaires --file=migrations/0001_add_composite_index.sql
+```
+
+**Verify migration:**
+```bash
+npx wrangler d1 execute <database-name> --command="SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='votes';"
+```
+
 ## Security
 
 See [SECURITY.md](./SECURITY.md) for detailed security implementation documentation.
