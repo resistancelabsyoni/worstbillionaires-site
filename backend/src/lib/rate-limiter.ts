@@ -4,8 +4,9 @@
  */
 export class RateLimiter {
   private requests: Map<string, number[]> = new Map();
-  private limit: number;
-  private window: number; // seconds
+  private readonly limit: number;
+  private readonly window: number; // seconds
+  private checkCount = 0; // Track number of checks for periodic cleanup
 
   constructor(limit: number, window: number) {
     this.limit = limit;
@@ -20,6 +21,12 @@ export class RateLimiter {
   check(clientId: string): boolean {
     const now = Date.now();
     const windowStart = now - this.window * 1000;
+
+    // Periodic cleanup: every 100 checks
+    this.checkCount++;
+    if (this.checkCount % 100 === 0) {
+      this.cleanup();
+    }
 
     // Get existing requests for this client
     let clientRequests = this.requests.get(clientId) || [];
@@ -54,6 +61,15 @@ export class RateLimiter {
         this.requests.set(clientId, filtered);
       }
     }
+  }
+
+  // Expose for testing
+  getMapSize(): number {
+    return this.requests.size;
+  }
+
+  getCleanupCount(): number {
+    return Math.floor(this.checkCount / 100);
   }
 }
 
