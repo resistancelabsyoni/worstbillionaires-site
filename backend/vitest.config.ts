@@ -10,6 +10,9 @@ export default defineWorkersConfig({
         miniflare: {
           // Use in-memory D1 database for tests
           d1Databases: ['DB'],
+          bindings: {
+            EMAIL_HASH_SECRET: 'test-secret-key-for-unit-tests',
+          },
         },
       },
     },
