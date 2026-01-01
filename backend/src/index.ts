@@ -11,6 +11,7 @@ import { AppError, ValidationError, RateLimitError, ForbiddenError } from './lib
 
 type Bindings = {
   DB: D1Database;
+  EMAIL_HASH_SECRET: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -141,7 +142,7 @@ app.post('/votes', async (c) => {
     validMatchups.map((m) => [m.matchupId, new Set(m.candidates)])
   );
 
-  const emailHash = await hashEmail(email);
+  const emailHash = await hashEmail(email, c.env.EMAIL_HASH_SECRET);
   const db = c.env.DB;
 
   let votesSubmitted = 0;

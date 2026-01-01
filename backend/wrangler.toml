@@ -3,6 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 workers_dev = true
 
+# EMAIL_HASH_SECRET: Set via Wrangler secrets (not in wrangler.toml for security)
+# Command: npx wrangler secret put EMAIL_HASH_SECRET --env <environment>
+# Generate with: openssl rand -hex 32
+# This secret is used for HMAC-SHA256 email hashing to prevent rainbow table attacks
+
 # Development environment (default)
 [[d1_databases]]
 binding = "DB"

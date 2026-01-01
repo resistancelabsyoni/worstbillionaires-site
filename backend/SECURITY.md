@@ -42,13 +42,23 @@ Invalid votes are returned in the `invalid` array but do not cause the entire re
 
 ## Email Privacy
 
-Email addresses are hashed using SHA-256 before storage:
+Email addresses are **hashed using HMAC-SHA256** with a secret key before storage:
 
-- Emails are normalized (lowercased, trimmed) before hashing
-- Only the hash is stored in the `votes` table
-- Original emails are stored in the `contacts` table for registration purposes
+- ✅ Protects against rainbow table attacks (requires secret key)
+- ✅ Prevents email enumeration in database
+- ✅ Allows duplicate vote detection without storing plaintext emails
+- ✅ Secret key stored in Cloudflare Workers secrets (not in code)
 
-**Note**: SHA-256 is not salted. For higher security applications, consider using PBKDF2 or Argon2 with a salt.
+**Setup:**
+```bash
+# Generate a secure random secret
+openssl rand -hex 32
+
+# Add to Cloudflare Workers
+npx wrangler secret put EMAIL_HASH_SECRET --env production
+```
+
+**Security note:** The secret key must be kept confidential. If compromised, attackers could compute email hashes and potentially identify voters. Rotate the key if compromise is suspected (note: this will invalidate existing duplicate vote detection).
 
 ## Error Handling
 
