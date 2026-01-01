@@ -9,7 +9,7 @@ export interface Matchup {
  * Get all valid matchups for the current round
  * This would typically fetch from database, but for now returns static config
  */
-export async function getMatchups(db: any, round: number): Promise<Matchup[]> {
+export async function getMatchups(db: D1Database, round: number): Promise<Matchup[]> {
   // TODO: Fetch from database once matchups table is created
   // For now, return hardcoded matchups for round 1
   if (round === 1) {
