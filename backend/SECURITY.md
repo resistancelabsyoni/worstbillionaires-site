@@ -89,6 +89,8 @@ Only the following origins are allowed:
 
 - `https://worstbillionaires.com`
 - `https://www.worstbillionaires.com`
+- `https://fuck2025.org`
+- `https://www.fuck2025.org`
 - `http://localhost:5173` (development only)
 - `http://localhost:3000` (development only)
 
