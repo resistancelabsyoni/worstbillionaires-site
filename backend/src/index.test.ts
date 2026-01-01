@@ -342,8 +342,29 @@ describe('Error handling', () => {
   });
 
   it('should not expose internal error details', async () => {
-    // This would require simulating a database error
-    // For now, just verify the error handler is registered
-    expect(true).toBe(true);
+    const request = new Request('http://localhost/tournament', {
+      method: 'GET',
+      headers: { 'CF-Connecting-IP': '10.3.0.1' },
+    });
+
+    // Mock database failure by temporarily breaking DB connection
+    const originalPrepare = env.DB.prepare;
+    env.DB.prepare = (() => {
+      throw new Error('SQLITE_CANTOPEN: unable to open database file');
+    }) as any;
+
+    const ctx = createExecutionContext();
+    const response = await worker.fetch(request, env, ctx);
+    await waitOnExecutionContext(ctx);
+
+    // Restore DB
+    env.DB.prepare = originalPrepare;
+
+    expect(response.status).toBe(500);
+    const data = await response.json();
+    // Verify internal error details are not exposed
+    expect(data.error).not.toContain('SQLITE_CANTOPEN');
+    expect(data.error).not.toContain('database file');
+    expect(data.error).toMatch(/server error|internal error|something went wrong/i);
   });
 });

@@ -37,11 +37,10 @@ test.describe('Voting Flow Tests - Local Only', () => {
     const sinsToggle = page.locator('.sins-toggle').first();
     await sinsToggle.click();
 
-    // Wait a moment for expansion animation
-    await page.waitForTimeout(500);
+    // Wait for sins content to become visible after expansion animation
+    await page.waitForSelector('.sins-content', { state: 'visible', timeout: 5000 });
 
-    // Verify sins content is visible (this will vary based on implementation)
-    // Check that the button state changed or content appeared
+    // Verify sins content is visible
     const matchupCard = page.locator('.matchup-card').first();
     await expect(matchupCard).toBeVisible();
   });
@@ -54,27 +53,22 @@ test.describe('Voting Flow Tests - Local Only', () => {
 
     // Select candidates in all matchups
     const candidates = page.locator('.candidate');
-    const count = await candidates.count();
+    expect(await candidates.count()).toBeGreaterThan(0); // Fail if no candidates
 
-    if (count > 0) {
-      // Click first available candidate
-      await candidates.first().click();
+    // Click first available candidate
+    await candidates.first().click();
 
-      // Find and click submit button (if visible)
-      const submitButton = page.locator('.btn-primary').first();
-      if (await submitButton.isVisible()) {
-        await submitButton.click();
+    // Find and click submit button
+    const submitButton = page.locator('.btn-primary').first();
+    await expect(submitButton).toBeVisible();
+    await submitButton.click();
 
-        // Wait for confirmation message
-        await page.waitForSelector('.thank-you, .confirmation', { timeout: 5000 });
+    // Wait for confirmation message
+    await page.waitForSelector('.thank-you, .confirmation', { timeout: 5000 });
 
-        // Check for success message
-        const thankYou = page.locator('.thank-you');
-        if (await thankYou.count() > 0) {
-          await expect(thankYou).toBeVisible();
-        }
-      }
-    }
+    // Check for success message
+    const thankYou = page.locator('.thank-you');
+    await expect(thankYou).toBeVisible();
   });
 
   test('email registration form accepts valid email', async ({ page }) => {
@@ -85,22 +79,21 @@ test.describe('Voting Flow Tests - Local Only', () => {
 
     // Look for email input (may appear after voting or be present initially)
     const emailInput = page.locator('#emailInput');
+    await expect(emailInput).toBeVisible();
 
-    if (await emailInput.count() > 0) {
-      await emailInput.fill('test@example.com');
-      await expect(emailInput).toHaveValue('test@example.com');
+    await emailInput.fill('test@example.com');
+    await expect(emailInput).toHaveValue('test@example.com');
 
-      // Fill optional name if present
-      const nameInput = page.locator('#nameInput');
-      if (await nameInput.count() > 0) {
-        await nameInput.fill('Test User');
-      }
+    // Fill optional name if present
+    const nameInput = page.locator('#nameInput');
+    if (await nameInput.count() > 0) {
+      await nameInput.fill('Test User');
+    }
 
-      // Check opt-in if present
-      const optIn = page.locator('#optIn');
-      if (await optIn.count() > 0) {
-        await optIn.check();
-      }
+    // Check opt-in if present
+    const optIn = page.locator('#optIn');
+    if (await optIn.count() > 0) {
+      await optIn.check();
     }
   });
 
@@ -112,23 +105,23 @@ test.describe('Voting Flow Tests - Local Only', () => {
 
     // Look for email input
     const emailInput = page.locator('#emailInput');
+    await expect(emailInput).toBeVisible();
 
-    if (await emailInput.count() > 0) {
-      // Enter invalid email
-      await emailInput.fill('invalid-email');
+    // Enter invalid email
+    await emailInput.fill('invalid-email');
 
-      // Try to submit
-      const submitButton = page.locator('.btn-primary').first();
-      if (await submitButton.isVisible()) {
-        await submitButton.click();
+    // Try to submit
+    const submitButton = page.locator('.btn-primary').first();
+    await expect(submitButton).toBeVisible();
+    await submitButton.click();
 
-        // Wait for error message (timing may vary)
-        await page.waitForTimeout(1000);
+    // Wait for validation error to appear (error message or invalid state)
+    await page.waitForSelector('.error-message, [aria-invalid="true"]', { timeout: 5000 }).catch(() => {
+      // If no visual error indicator, HTML5 validation may be handling it
+    });
 
-        // Check for validation error (could be native HTML5 validation or custom)
-        const isInvalid = await emailInput.evaluate((el: HTMLInputElement) => !el.validity.valid);
-        expect(isInvalid).toBeTruthy();
-      }
-    }
+    // Check for validation error (could be native HTML5 validation or custom)
+    const isInvalid = await emailInput.evaluate((el: HTMLInputElement) => !el.validity.valid);
+    expect(isInvalid).toBeTruthy();
   });
 });
