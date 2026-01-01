@@ -1,4 +1,4 @@
-import { beforeAll } from 'vitest';
+import { beforeAll, afterEach } from 'vitest';
 import { env } from 'cloudflare:test';
 
 // Inline schema to avoid file system issues in bundled Workers environment
@@ -54,4 +54,10 @@ beforeAll(async () => {
       throw error;
     }
   }
+});
+
+afterEach(async () => {
+  // Clean up test data between tests
+  await env.DB.prepare('DELETE FROM contacts').run();
+  await env.DB.prepare('DELETE FROM votes').run();
 });
