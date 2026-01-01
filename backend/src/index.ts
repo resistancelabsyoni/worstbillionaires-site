@@ -21,6 +21,8 @@ const app = new Hono<{ Bindings: Bindings }>();
 const ALLOWED_ORIGINS = [
   'https://worstbillionaires.com',
   'https://www.worstbillionaires.com',
+  'https://fuck2025.org',
+  'https://www.fuck2025.org',
   'http://localhost:5173', // Vite dev server
   'http://localhost:3000', // Alternative dev port
 ];
