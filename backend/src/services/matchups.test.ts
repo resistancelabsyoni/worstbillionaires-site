@@ -3,14 +3,15 @@ import { getMatchups, validateCandidateInMatchup, type Matchup } from './matchup
 
 describe('getMatchups', () => {
   it('should return round 1 matchups', async () => {
-    const matchups = await getMatchups(null, 1);
+    // db parameter not used yet (static data), so pass empty object
+    const matchups = await getMatchups({} as D1Database, 1);
     expect(matchups).toHaveLength(4);
     expect(matchups[0].matchupId).toBe('r1m1');
     expect(matchups[0].candidates).toContain('elon_musk');
   });
 
   it('should return empty array for invalid round', async () => {
-    const matchups = await getMatchups(null, 99);
+    const matchups = await getMatchups({} as D1Database, 99);
     expect(matchups).toHaveLength(0);
   });
 });

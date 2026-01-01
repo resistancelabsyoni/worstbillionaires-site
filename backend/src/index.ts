@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import type { Context, StatusCode } from 'hono';
 import { cors } from 'hono/cors';
 import { getCurrentRound, isVotingOpen } from './config/tournament';
 import { getMatchups as getTournamentMatchups, getVoteCounts } from './services/tournament';
@@ -38,7 +39,7 @@ app.use('/*', cors({
 }));
 
 // Helper function to get client identifier
-function getClientId(c: any): string {
+function getClientId(c: Context<{ Bindings: Bindings }>): string {
   // Use CF-Connecting-IP header (Cloudflare provides this)
   return c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown';
 }
@@ -47,13 +48,13 @@ function getClientId(c: any): string {
 app.onError((err, c) => {
   console.error('Error:', err);
 
-  // Handle Zod validation errors - check by name as well since instanceof may not work in all environments
-  if (err instanceof z.ZodError || err.name === 'ZodError') {
+  // Handle Zod validation errors
+  if (err instanceof z.ZodError) {
     return c.json(
       {
         error: 'Invalid input',
         code: 'VALIDATION_ERROR',
-        details: (err as any).errors || (err as any).issues,
+        details: err.issues,
       },
       400
     );
@@ -67,7 +68,7 @@ app.onError((err, c) => {
         code: err.code,
         ...(err instanceof ValidationError && { details: err.details }),
       },
-      err.statusCode as any
+      err.statusCode as StatusCode
     );
   }
 
@@ -171,8 +172,9 @@ app.post('/votes', async (c) => {
         .bind(emailHash, matchupId, candidateId, currentRound)
         .run();
       votesSubmitted++;
-    } catch (err: any) {
-      if (err.message?.includes('UNIQUE')) {
+    } catch (err) {
+      // Type guard for Error objects
+      if (err instanceof Error && err.message?.includes('UNIQUE')) {
         skipped.push(matchupId);
         continue;
       }
