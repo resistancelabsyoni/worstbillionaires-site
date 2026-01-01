@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Test results
+test-results/
+playwright-report/
+
+# Environment variables
+.env
+.env.local
+
+# OS files
+.DS_Store
