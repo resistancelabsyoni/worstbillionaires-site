@@ -74,7 +74,7 @@ app.onError((err, c) => {
         code: err.code,
         ...(err instanceof ValidationError && { details: err.details }),
       },
-      err.statusCode
+      err.statusCode as 400 | 401 | 403 | 429 | 500
     );
   }
 

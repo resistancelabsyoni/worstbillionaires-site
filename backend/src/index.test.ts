@@ -18,7 +18,7 @@ describe('/register endpoint', () => {
     await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(400);
-    const data = await response.json();
+    const data = (await response.json()) as { error: string };
     expect(data.error).toBe('Invalid input');
   });
 
@@ -37,7 +37,7 @@ describe('/register endpoint', () => {
     await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(400);
-    const data = await response.json();
+    const data = (await response.json()) as { error: string };
     expect(data.error).toBe('Invalid input');
   });
 
@@ -56,7 +56,7 @@ describe('/register endpoint', () => {
     await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(400);
-    const data = await response.json();
+    const data = (await response.json()) as { error: string };
     expect(data.error).toBe('Invalid input');
   });
 
@@ -80,7 +80,7 @@ describe('/register endpoint', () => {
     await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(200);
-    const data = await response.json();
+    const data = (await response.json()) as { success: boolean };
     expect(data.success).toBe(true);
   });
 });
@@ -104,7 +104,7 @@ describe('/votes endpoint validation', () => {
     await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(400);
-    const data = await response.json();
+    const data = (await response.json()) as { error: string };
     expect(data.error).toBe('Invalid input');
   });
 
@@ -126,7 +126,7 @@ describe('/votes endpoint validation', () => {
     await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(200);
-    const data = await response.json();
+    const data = (await response.json()) as { invalid: string[]; votesSubmitted: number };
     expect(data.invalid).toContain('r5m1');
     expect(data.votesSubmitted).toBe(0);
   });
@@ -149,7 +149,7 @@ describe('/votes endpoint validation', () => {
     await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(200);
-    const data = await response.json();
+    const data = (await response.json()) as { invalid: string[]; votesSubmitted: number };
     expect(data.invalid).toContain('r1m1:jeff_bezos');
     expect(data.votesSubmitted).toBe(0);
   });
@@ -177,7 +177,7 @@ describe('/votes endpoint validation', () => {
     await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(200);
-    const data = await response.json();
+    const data = (await response.json()) as { success: boolean; votesSubmitted: number };
     expect(data.success).toBe(true);
     expect(data.votesSubmitted).toBe(2);
   });
@@ -245,14 +245,14 @@ describe('Rate limiting', () => {
       });
 
       const ctx = createExecutionContext();
-      return worker.fetch(request, env, ctx).then(async (response) => {
+      return Promise.resolve(worker.fetch(request, env, ctx)).then(async (response: Response) => {
         await waitOnExecutionContext(ctx);
         return response;
       });
     });
 
     const responses = await Promise.all(requests);
-    const statuses = responses.map((r) => r.status);
+    const statuses = responses.map((r: Response) => r.status);
 
     // First 5 should succeed or fail validation (200/400), last should be rate limited (429)
     expect(statuses[5]).toBe(429);
@@ -273,14 +273,14 @@ describe('Rate limiting', () => {
       });
 
       const ctx = createExecutionContext();
-      return worker.fetch(request, env, ctx).then(async (response) => {
+      return Promise.resolve(worker.fetch(request, env, ctx)).then(async (response: Response) => {
         await waitOnExecutionContext(ctx);
         return response;
       });
     });
 
     const responses = await Promise.all(requests);
-    const statuses = responses.map((r) => r.status);
+    const statuses = responses.map((r: Response) => r.status);
 
     // First 2 should succeed, last should be rate limited
     expect(statuses[2]).toBe(429);
@@ -303,7 +303,7 @@ describe('Error handling', () => {
     await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(400);
-    const data = await response.json();
+    const data = (await response.json()) as { error: string; code: string; details: unknown[] };
     expect(data.error).toBe('Invalid input');
     expect(data.code).toBe('VALIDATION_ERROR');
     // Zod errors have a details field with error array
@@ -326,7 +326,7 @@ describe('Error handling', () => {
       });
 
       const ctx = createExecutionContext();
-      return worker.fetch(request, env, ctx).then(async (response) => {
+      return Promise.resolve(worker.fetch(request, env, ctx)).then(async (response: Response) => {
         await waitOnExecutionContext(ctx);
         return response;
       });
@@ -336,7 +336,7 @@ describe('Error handling', () => {
     const lastResponse = responses[5];
 
     expect(lastResponse.status).toBe(429);
-    const data = await lastResponse.json();
+    const data = (await lastResponse.json()) as { error: string; code: string };
     expect(data.error).toContain('Too many votes');
     expect(data.code).toBe('RATE_LIMIT_ERROR');
   });
@@ -361,7 +361,7 @@ describe('Error handling', () => {
     env.DB.prepare = originalPrepare;
 
     expect(response.status).toBe(500);
-    const data = await response.json();
+    const data = (await response.json()) as { error: string };
     // Verify internal error details are not exposed
     expect(data.error).not.toContain('SQLITE_CANTOPEN');
     expect(data.error).not.toContain('database file');
