@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WORST BILLIONAIRE 2025</title>
-    <meta name="description" content="The people's tournament to crown 2025's worst billionaire. Vote now.">
-    <meta property="og:title" content="WORST BILLIONAIRE 2025">
+    <title>WORST BILLIONAIRE 2026</title>
+    <meta name="description" content="The people's tournament to crown 2026's worst billionaire. Vote now.">
+    <meta property="og:title" content="WORST BILLIONAIRE 2026">
     <meta property="og:description" content="16 billionaires. 4 rounds. 1 champion of greed. The people decide.">
-    <meta property="og:image" content="https://placehold.co/1200x630/0d0d0d/ff2a2a?text=WORST%0ABILLIONAIRE%0A2025&font=Anton">
+    <meta property="og:image" content="https://placehold.co/1200x630/0d0d0d/ff2a2a?text=WORST%0ABILLIONAIRE%0A2026&font=Anton">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -983,7 +983,7 @@
             { name: 'Final', start: '2026-01-25T00:00:00', end: '2026-02-01T23:59:59' }
         ],
         
-        canonicalUrl: 'https://fuck2025.org',
+        canonicalUrl: 'https://worstbillionaire.app',
 
         // Demo mode - set to false for production
         demo: false,
@@ -1031,20 +1031,20 @@ function renderScheduleAndExplainer() {
 // Social sharing helpers
 function shareLinkedIn() {
     const url = encodeURIComponent(canonicalUrl());
-    const text = encodeURIComponent("Vote in Worst Billionaire 2025.");
+    const text = encodeURIComponent("Vote in Worst Billionaire 2026.");
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${text}`, "_blank");
 }
 function shareReddit() {
     const url = encodeURIComponent(canonicalUrl());
-    const title = encodeURIComponent("Worst Billionaire 2025 — vote now");
+    const title = encodeURIComponent("Worst Billionaire 2026 — vote now");
     window.open(`https://www.reddit.com/submit?url=${url}&title=${title}`, "_blank");
 }
 function shareBluesky() {
-    const text = encodeURIComponent(`Worst Billionaire 2025 — vote now: ${canonicalUrl()}`);
+    const text = encodeURIComponent(`Worst Billionaire 2026 — vote now: ${canonicalUrl()}`);
     window.open(`https://bsky.app/intent/compose?text=${text}`, "_blank");
 }
 function shareEmail() {
-    const subject = encodeURIComponent("Vote: Worst Billionaire 2025");
+    const subject = encodeURIComponent("Vote: Worst Billionaire 2026");
     const body = encodeURIComponent(`Vote here: ${canonicalUrl()}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
@@ -1085,7 +1085,7 @@ function downloadShareImage() {
     // Title
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 64px system-ui, -apple-system, Segoe UI, Roboto";
-    ctx.fillText("WORST BILLIONAIRE 2025", 70, 120);
+    ctx.fillText("WORST BILLIONAIRE 2026", 70, 120);
     // Round
     ctx.fillStyle = "#bdbdbd";
     ctx.font = "bold 28px system-ui, -apple-system, Segoe UI, Roboto";
@@ -1104,7 +1104,7 @@ function downloadShareImage() {
     // Download
     const aTag = document.createElement("a");
     aTag.href = canvas.toDataURL("image/png");
-    aTag.download = "worst-billionaire-2025.png";
+    aTag.download = "worst-billionaire-2026.png";
     aTag.click();
 }
     
@@ -2136,9 +2136,9 @@ function downloadShareImage() {
         
         if (round === 5 && state.tournamentData?.results?.[4]?.[0]) {
             const winner = BILLIONAIRES[state.tournamentData.results[4][0].winner].name;
-            text = `The people have spoken: ${winner} is 2025's WORST BILLIONAIRE 🏆\n\nSee the results:`;
+            text = `The people have spoken: ${winner} is 2026's WORST BILLIONAIRE 🏆\n\nSee the results:`;
         } else {
-            text = `I'm voting in the Worst Billionaire 2025 tournament. Who's YOUR pick for worst?\n\n`;
+            text = `I'm voting in the Worst Billionaire 2026 tournament. Who's YOUR pick for worst?\n\n`;
         }
         
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(canonicalUrl())}`, '_blank');

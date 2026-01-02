@@ -25,7 +25,7 @@ CREATE TABLE contacts (
   name TEXT,
   zip TEXT,
   opt_in INTEGER NOT NULL DEFAULT 0,
-  source TEXT DEFAULT 'Worst Billionaire 2025'
+  source TEXT DEFAULT 'Worst Billionaire 2026'
 );
 CREATE INDEX idx_contacts_email ON contacts(email);
 `;

@@ -23,8 +23,6 @@ const ALLOWED_ORIGINS = [
   'https://www.worstbillionaires.com',
   'https://worstbillionaire.app',
   'https://www.worstbillionaire.app',
-  'https://fuck2025.org',
-  'https://www.fuck2025.org',
   'http://localhost:5173', // Vite dev server
   'http://localhost:3000', // Alternative dev port
 ];

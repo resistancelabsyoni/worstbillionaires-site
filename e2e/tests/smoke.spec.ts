@@ -1,13 +1,25 @@
 import { test, expect } from '@playwright/test';
 
-const API_URL = process.env.API_URL || process.env.BASE_URL || 'http://localhost:8787';
+// Determine API URL - production uses Workers subdomain, local dev uses same host
+const getApiUrl = () => {
+  if (process.env.API_URL) return process.env.API_URL;
+
+  const baseUrl = process.env.BASE_URL || 'http://localhost:8787';
+  // If testing against production frontend, use production API
+  if (baseUrl.includes('worstbillionaire.app')) {
+    return 'https://worst-billionaires-api-production.rvkgq2t45r.workers.dev';
+  }
+  return baseUrl;
+};
+
+const API_URL = getApiUrl();
 
 test.describe('Smoke Tests - Production Safe', () => {
   test('page loads with correct title and logo', async ({ page }) => {
     await page.goto('/');
 
     // Check page title
-    await expect(page).toHaveTitle(/WORST BILLIONAIRE 2025/);
+    await expect(page).toHaveTitle(/WORST BILLIONAIRE 2026/);
 
     // Check logo is visible
     const logo = page.locator('.logo');
