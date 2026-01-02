@@ -1345,7 +1345,8 @@ function downloadShareImage() {
         votes: {},
         selections: {},
         tournamentData: null,
-        hasSubmittedThisRound: false
+        hasSubmittedThisRound: false,
+        emailFormDismissed: false
     };
     
     function generateVisitorId() {
@@ -1811,7 +1812,7 @@ function downloadShareImage() {
                     Your voice has been heard. Want to see how everyone else is voting?
                 </p>
                 
-                ${state.email ? `
+                ${state.email || state.emailFormDismissed ? `
                     <p style="color: var(--green); margin-bottom: 30px;">✓ You'll be notified when results are in</p>
                     <div class="share-strip">
                         <button class="share-btn twitter" onclick="shareTwitter()">𝕏 Share</button>
@@ -2121,6 +2122,7 @@ function downloadShareImage() {
     }
     
     function skipEmail() {
+        state.emailFormDismissed = true;
         render();
     }
     
