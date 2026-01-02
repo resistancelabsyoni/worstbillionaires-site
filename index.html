@@ -1731,8 +1731,8 @@ function downloadShareImage() {
     }
     
     function renderMatchupCard(matchup, index, votedFor) {
-        // Treat the matchup as complete if the user has submitted any vote this round
-        const hasVoted = !!votedFor || state.hasSubmittedThisRound;
+        // Check if this specific matchup has been voted on
+        const hasVoted = !!votedFor;
         const selected = state.selections[matchup.id];
         
         return `
