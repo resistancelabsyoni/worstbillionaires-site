@@ -1,4 +1,4 @@
-import { getCurrentRound } from '../config/tournament';
+import { getCurrentRound, INITIAL_BRACKET } from '../config/tournament';
 
 export interface Matchup {
   matchupId: string;
@@ -11,14 +11,9 @@ export interface Matchup {
  */
 export async function getMatchups(db: D1Database, round: number): Promise<Matchup[]> {
   // TODO: Fetch from database once matchups table is created
-  // For now, return hardcoded matchups for round 1
+  // For now, return initial bracket for round 1
   if (round === 1) {
-    return [
-      { matchupId: 'r1m1', candidates: ['elon_musk', 'mark_zuckerberg'] },
-      { matchupId: 'r1m2', candidates: ['jeff_bezos', 'bill_gates'] },
-      { matchupId: 'r1m3', candidates: ['larry_ellison', 'warren_buffett'] },
-      { matchupId: 'r1m4', candidates: ['bernard_arnault', 'larry_page'] },
-    ];
+    return INITIAL_BRACKET;
   }
 
   // For subsequent rounds, query previous round winners

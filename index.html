@@ -1483,6 +1483,9 @@ function downloadShareImage() {
     async function submitVotes(selections) {
         console.log('Submitting votes:', { visitorId: state.visitorId, selections });
 
+        let backendSuccess = false;
+        let backendError = null;
+
         // Try to send to API if configured
         if (CONFIG.apiUrl) {
             // Generate email from visitorId if user hasn't provided one
@@ -1508,8 +1511,11 @@ function downloadShareImage() {
                 if (result.skipped && result.skipped.length > 0) {
                     console.log('Skipped duplicate votes for matchups:', result.skipped);
                 }
+
+                backendSuccess = true;
             } catch (e) {
                 console.error('Submit error:', e);
+                backendError = e.message;
                 // Continue anyway - we'll save locally
             }
         }
@@ -1525,7 +1531,7 @@ function downloadShareImage() {
         // that future visits to the site start with a fresh ballot.  Users can still
         // submit multiple times by refreshing or returning later.
         state.hasSubmittedThisRound = true;
-        return { success: true };
+        return { success: true, backendSuccess, backendError };
     }
     
     async function submitEmail(email, name, zip, optIn) {
@@ -2065,9 +2071,9 @@ function downloadShareImage() {
             alert('Pick at least one matchup before submitting.');
             return;
         }
-        
+
         const result = await submitVotes(state.selections);
-        
+
         if (result.success) {
             // Merge selections into votes
             const round = getCurrentRound();
@@ -2075,7 +2081,14 @@ function downloadShareImage() {
             localStorage.setItem('wb_votes', JSON.stringify(state.votes));
             state.selections = {};
             render();
-            
+
+            // Warn if backend failed but local succeeded
+            if (!result.backendSuccess && result.backendError) {
+                console.warn('Votes saved locally but backend submission failed:', result.backendError);
+                // Could optionally show a user-facing message here
+                // For now, we'll just continue silently since local-first is intentional
+            }
+
             // Scroll to thank you
             document.getElementById('submitSection').scrollIntoView({ behavior: 'smooth' });
         }

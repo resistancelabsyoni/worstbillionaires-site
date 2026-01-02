@@ -24,6 +24,15 @@ cd e2e/
 npm test             # Run Playwright tests
 ```
 
+## Browser Testing with Chrome DevTools MCP
+
+Use the chrome-devtools MCP server to test the application interactively:
+
+- **Production**: https://worstbillionaire.app/
+- **Local**: http://localhost:8787/ (when running `npm run dev` in backend/)
+
+The MCP server provides tools for browser automation, taking snapshots, screenshots, inspecting network requests, console logs, and more. Use it to verify UI behavior, test voting flows, and debug issues in both environments.
+
 ## Tech Stack
 
 - **Backend**: Hono (web framework), Cloudflare D1 (SQLite), Zod (validation)

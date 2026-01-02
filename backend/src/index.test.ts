@@ -166,8 +166,8 @@ describe('/votes endpoint validation', () => {
       body: JSON.stringify({
         email: uniqueEmail,
         votes: {
-          r1m1: 'elon_musk',
-          r1m2: 'jeff_bezos',
+          r1m1: 'musk',
+          r1m2: 'trump',
         },
       }),
     });
