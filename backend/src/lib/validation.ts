@@ -7,7 +7,10 @@ import { z } from 'zod';
 export const RegisterSchema = z.object({
   email: z.string().email('Invalid email format').max(255, 'Email too long'),
   name: z.string().max(100, 'Name too long').optional(),
-  zip: z.string().regex(/^\d{5}(-\d{4})?$/, 'Invalid ZIP code format').optional(),
+  zip: z.string()
+    .regex(/^\d{5}(-\d{4})?$/, 'Invalid ZIP code format')
+    .or(z.literal(''))
+    .optional(),
   optIn: z.boolean().optional(),
 });
 

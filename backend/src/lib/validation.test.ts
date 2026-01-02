@@ -70,6 +70,44 @@ describe('RegisterSchema', () => {
   });
 });
 
+describe('RegisterSchema - ZIP validation', () => {
+  it('should accept empty string for optional ZIP field', () => {
+    const validInput = {
+      email: 'test@example.com',
+      zip: '',
+      optIn: true
+    };
+    const result = RegisterSchema.safeParse(validInput);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.zip).toBe('');
+    }
+  });
+
+  it('should accept undefined for optional ZIP field', () => {
+    const validInput = {
+      email: 'test@example.com',
+      optIn: true
+    };
+    const result = RegisterSchema.safeParse(validInput);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.zip).toBeUndefined();
+    }
+  });
+
+  it('should validate format when ZIP is provided', () => {
+    const validZip5 = RegisterSchema.safeParse({ email: 'test@example.com', zip: '12345' });
+    expect(validZip5.success).toBe(true);
+
+    const validZip9 = RegisterSchema.safeParse({ email: 'test@example.com', zip: '12345-6789' });
+    expect(validZip9.success).toBe(true);
+
+    const invalidZip = RegisterSchema.safeParse({ email: 'test@example.com', zip: 'abc' });
+    expect(invalidZip.success).toBe(false);
+  });
+});
+
 describe('VotesSchema', () => {
   it('should accept valid votes object', () => {
     const result = VotesSchema.safeParse({
