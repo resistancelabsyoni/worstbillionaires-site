@@ -21,6 +21,8 @@ const app = new Hono<{ Bindings: Bindings }>();
 const ALLOWED_ORIGINS = [
   'https://worstbillionaires.com',
   'https://www.worstbillionaires.com',
+  'https://worstbillionaire.app',
+  'https://www.worstbillionaire.app',
   'https://fuck2025.org',
   'https://www.fuck2025.org',
   'http://localhost:5173', // Vite dev server
@@ -122,6 +124,7 @@ app.get('/tournament', async (c) => {
   return c.json({
     currentRound,
     matchups: matchups.map((m) => ({
+      id: m.matchupId, // Frontend expects 'id' property
       ...m,
       votes: voteCounts[m.matchupId] || {},
     })),

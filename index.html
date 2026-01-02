@@ -991,10 +991,10 @@
 
 // Voting schedule for display (human-readable)
 const SCHEDULE = [
-    { label: "Round of 16", dates: "Dec 24 – Jan 5" },
-    { label: "Quarterfinals", dates: "Jan 6 – Jan 9" },
-    { label: "Semifinals", dates: "Jan 10 – Jan 12" },
-    { label: "Final", dates: "Jan 13 – Jan 16" }
+    { label: "Round of 16", dates: "Jan 1 – Jan 8" },
+    { label: "Quarterfinals", dates: "Jan 9 – Jan 16" },
+    { label: "Semifinals", dates: "Jan 17 – Jan 24" },
+    { label: "Final", dates: "Jan 25 – Feb 1" }
 ];
 
 // Returns the canonical URL for sharing
@@ -1410,6 +1410,12 @@ function downloadShareImage() {
             const json = await res.json();
             // Validate that matchups exist and have at least one entry; otherwise fallback to local
             if (json && json.matchups && typeof json.matchups === 'object' && Object.keys(json.matchups).length > 0) {
+                // Ensure each matchup has an id property (API may not include it)
+                Object.keys(json.matchups).forEach(key => {
+                    if (!json.matchups[key].id) {
+                        json.matchups[key].id = key;
+                    }
+                });
                 return json;
             }
             // Fallback to local data if no matchups or invalid structure
